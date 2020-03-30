@@ -1,0 +1,36 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/config.2.0.schema.json",
+  "version": "2.0",
+  "bundles": {
+    "korean-work-flow-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/koreanWorkFlow/KoreanWorkFlowWebPart.js",
+          "manifest": "./src/webparts/koreanWorkFlow/KoreanWorkFlowWebPart.manifest.json"
+        }
+      ]
+    },
+    "sub-web-part-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/subWebPart/SubWebPartWebPart.js",
+          "manifest": "./src/webparts/subWebPart/SubWebPartWebPart.manifest.json"
+        }
+      ]
+    },
+    "korean-work-flow-application-customizer": {
+      "components": [
+        {
+          "entrypoint": "./lib/extensions/koreanWorkFlow/KoreanWorkFlowApplicationCustomizer.js",
+          "manifest": "./src/extensions/koreanWorkFlow/KoreanWorkFlowApplicationCustomizer.manifest.json"
+        }
+      ]
+    }
+  },
+  "externals": {},
+  "localizedResources": {
+    "KoreanWorkFlowWebPartStrings": "lib/webparts/koreanWorkFlow/loc/{locale}.js",
+    "SubWebPartWebPartStrings": "lib/webparts/subWebPart/loc/{locale}.js",
+    "KoreanWorkFlowApplicationCustomizerStrings": "lib/extensions/koreanWorkFlow/loc/{locale}.js"
+  }
+}

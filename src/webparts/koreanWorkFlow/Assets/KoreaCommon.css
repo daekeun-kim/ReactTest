@@ -1,0 +1,18 @@
+.canvasHost_36e9519e
+{
+   width: 1700px; 
+}
+
+#HambergerMenu {
+
+   display: none;
+}
+
+@media screen and (max-width: 1000px)  {
+   #HambergerMenu {
+      display: block;
+   }
+   #sideMenu{
+      display: none;
+   }
+}

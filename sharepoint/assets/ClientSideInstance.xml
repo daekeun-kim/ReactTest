@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Elements xmlns="http://schemas.microsoft.com/sharepoint/">
+    <ClientSideComponentInstance
+        Title="KoreanWorkFlow"
+        Location="ClientSideExtension.ApplicationCustomizer"
+        ComponentId="377e0334-6c49-48d7-a015-fdaeb7e5e852"
+        Properties="{&quot;testMessage&quot;:&quot;Test message&quot;}">
+    </ClientSideComponentInstance>
+</Elements>
