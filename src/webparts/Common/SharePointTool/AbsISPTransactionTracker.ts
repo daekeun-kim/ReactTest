@@ -1,21 +1,29 @@
 import ISPTransactionCommand from "./ISPTransactionCommand";
 import pnp, { ODataParserBase, AttachmentFileInfo, CamlQuery,Web, ItemAddResult, sp } from "sp-pnp-js";
-import ISPTransactdion from "./ISPTransactionTracker";
 import { Person } from "./Person";
-import ISPTransactionTracker from "./ISPTransactionTracker";
+import ISPTransactionTrackerHeader from "./ISPTransactionTrackerHeader";
 import { Guid } from "@microsoft/sp-core-library";
 import { ApiCommand } from "./ApiTransactionTracker";
+import ITransactionProgressIndicator from "./ITransactionProgressIndicator";
 
-export abstract class AbsISPTRansactionTracker implements ISPTransactionTracker {
+export abstract class AbsISPTRansactionTracker implements ISPTransactionTrackerHeader {
 
 
     protected _trackerHeaderId:string;
     protected _trackerHeaderListItemId:number;
+    protected _progressIndicator:ITransactionProgressIndicator
+    protected _hasProgressIndicator:boolean;
+    protected _completedSpoWebServiceCount:number;
+    protected _totalSpoWebServiceCount:number;
     
 
     constructor(any){
 
         this._trackerHeaderId = Guid.newGuid().toString();
+        this._progressIndicator = null;
+        this._hasProgressIndicator = false;
+        this._completedSpoWebServiceCount = 0;
+        this._totalSpoWebServiceCount = 0;
     }
 
     abstract getTrackerSharePointSite(): string;
@@ -23,10 +31,68 @@ export abstract class AbsISPTRansactionTracker implements ISPTransactionTracker 
     abstract getTransactionName(): string ;
     abstract getSendToUserEmailWhenFail():string;
     abstract getSendToAdminEmailWhenFail():string;
+ 
+    setProgressIndicator(iProgressIndicator:ITransactionProgressIndicator){
+
+        this._hasProgressIndicator = true;
+        this._progressIndicator = iProgressIndicator;
+    }
+
+    removeProgressIndicator(){
+
+        this._hasProgressIndicator = false;
+        this._progressIndicator = null;
+    }
+
+
+    handleWhenStartTransaction(TotalTransactionCount: number): void {
+
+        if ( this._hasProgressIndicator === true){
+            
+            this._progressIndicator.handleProgressWhenStartTransaction(TotalTransactionCount);
+        }
+    }
+    handleWhenCompletedCommand(CompletedTransactionCount: number, TotalTransactionCount: number): void {
+
+        if ( this._hasProgressIndicator === true){
+            
+            this._progressIndicator.handleProgressWhenCompletedCommand(CompletedTransactionCount,TotalTransactionCount);
+        }
+  
+    }
+    handleWhenFailedCommand(CompletedTransactionCount: number, TotalTransactionCount: number): void {
+
+        if ( this._hasProgressIndicator === true){
+            
+            this._progressIndicator.handleProgressWhenFailedCommand(CompletedTransactionCount,TotalTransactionCount);
+        }
+
+    }
+    handleWhenCompletedTransation(TotalTransactionCount: number): void {
+
+        if ( this._hasProgressIndicator === true){
+            
+            this._progressIndicator.handleProgressWhenCompletedTransation(TotalTransactionCount);
+        }
+     
+    }
+    handleWhenFailedTransation(TotalTransactionCount: number): void {
+
+        if ( this._hasProgressIndicator === true){
+            
+            this._progressIndicator.handleProgressWhenFailedTransation(TotalTransactionCount);
+        }
+
+    }
+
 
     setTrackerHeaderListItemId(iListItemNumber:number){
 
         this._trackerHeaderListItemId = iListItemNumber;
+    }
+
+    setTotalSpoWebServiceCount(iTotalSpoWebServiceCount){
+        this._totalSpoWebServiceCount = iTotalSpoWebServiceCount;
     }
 
     getTargetSharepointSite(): string {
@@ -64,8 +130,11 @@ export abstract class AbsISPTRansactionTracker implements ISPTransactionTracker 
             ,Result:"wait"
         }).then((result:ItemAddResult)=>{
             console.log("createTrackerHeader -- end");
+            this._completedSpoWebServiceCount++
+            this.handleWhenCompletedCommand(this._completedSpoWebServiceCount,this._totalSpoWebServiceCount);
             return result;
         }).catch(error=>{
+            this.handleWhenFailedCommand(this._completedSpoWebServiceCount,this._totalSpoWebServiceCount);
             return error;
         });
 
@@ -94,10 +163,12 @@ export abstract class AbsISPTRansactionTracker implements ISPTransactionTracker 
             ,Result:"wait"
 
         }).then((result:ItemAddResult)=>{
-            console.log("createTrackerDetails -- end");
-
+            this._completedSpoWebServiceCount++
+            this.handleWhenCompletedCommand(this._completedSpoWebServiceCount,this._totalSpoWebServiceCount);            
+            console.log("createTrackerDetails -- end");            
             return result;
         }).catch(error=>{
+            this.handleWhenFailedCommand(this._completedSpoWebServiceCount,this._totalSpoWebServiceCount);
             return error;
         });
 
@@ -115,10 +186,12 @@ export abstract class AbsISPTRansactionTracker implements ISPTransactionTracker 
         }).then(res=>{
 
             console.log("updateTrackerHeader -- end");
+            this._completedSpoWebServiceCount++
+            this.handleWhenCompletedCommand(this._completedSpoWebServiceCount,this._totalSpoWebServiceCount);
             return true;
 
         }).catch(error=>{
-
+            this.handleWhenFailedCommand(this._completedSpoWebServiceCount,this._totalSpoWebServiceCount);
             return false;
         });
     }

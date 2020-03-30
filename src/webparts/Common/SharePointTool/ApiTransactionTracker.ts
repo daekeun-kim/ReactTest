@@ -1,7 +1,7 @@
 import ISPTransactionCommand from "./ISPTransactionCommand"
 import pnp, { ODataParserBase, AttachmentFileInfo, CamlQuery,Web, ItemAddResult } from "sp-pnp-js";
 import { Person } from "./Person";
-import ISPTransactionTracker from "./ISPTransactionTracker";
+import ISPTransactionTrackerHeader from "./ISPTransactionTrackerHeader";
 import { Guid } from "@microsoft/sp-core-library";
 
 export class ApiTransactionTracker {
@@ -10,18 +10,23 @@ export class ApiTransactionTracker {
     private _transactionID:string;
     private _commandQueue:ApiCommand[]
     private _transactionCount:number;
-    private _spTrackerTacker:ISPTransactionTracker;
-    private _transactionName:string;
-    private _transactionListitemID:number;
+
+    private _spTrackerTacker:ISPTransactionTrackerHeader;
     private _completedCommand:number;
 
+    private _totalSpoWebserviceCount:number;
+    private _completedSpoWebserviceCount:number;
 
-    constructor(spTransactionTracker:ISPTransactionTracker){
+
+    constructor(spTransactionTracker:ISPTransactionTrackerHeader){
 
         this._commandQueue = [] as ApiCommand[];        
         this._transactionCount = 0;
         this._spTrackerTacker = spTransactionTracker;        
         this._completedCommand = 0;
+        this._totalSpoWebserviceCount = 0;
+        this._completedSpoWebserviceCount = 0;
+        this._transactionID = spTransactionTracker.getTrackerHeaderId();
     }
 
     private async OpenConnection(){
@@ -52,34 +57,25 @@ export class ApiTransactionTracker {
                     })                 
                 })
             );
-
         }
 
-
         return await Promise.all(apiList).then(res =>{
-
             console.log("connection success");
             let result = true;
-
             for (let index = 0; index < res.length; index++) {
                 const element:ItemAddResult = res[index];
-
                 if (element != null && element.data != null&& element.data.Id){
-
                     if ( index === 0){
                         this._spTrackerTacker.setTrackerHeaderListItemId(element.data.Id);
                     }
                     else{
                         this._commandQueue[index-1].setTrackerDetailId(element.data.Id);
                     }
-
                 }
                 else{
                     result = false;
-                }
-                
-            }
-         
+                }                
+            }         
             return result;
         }); 
 
@@ -94,6 +90,7 @@ export class ApiTransactionTracker {
 
             if (this._commandQueue[index].getTargetObj().getResult() === false){
                 transactionResult = false;
+                this._spTrackerTacker.handleWhenFailedTransation(this._totalSpoWebserviceCount);
                 break;
             }
         }
@@ -126,11 +123,10 @@ export class ApiTransactionTracker {
             return res;
         });  
 
-        console.log("return  - comlete heaer");
-
+        console.log("return  - completed header");
         console.log(completedHedaerUpdate);
 
-
+        this._spTrackerTacker.handleWhenCompletedTransation(this._transactionCount);
         return completedHedaerUpdate;
 
     }
@@ -187,10 +183,18 @@ export class ApiTransactionTracker {
     
     public async ExecuteCommand(){
 
+        let totalTransactionCount = this._transactionCount;
+        this._totalSpoWebserviceCount = ( this._transactionCount * 2 ) + 2 // +2 for header
+        this._completedSpoWebserviceCount = this._transactionCount + 1; // start from count of detail web services
+        
+        this._spTrackerTacker.setTotalSpoWebServiceCount(this._totalSpoWebserviceCount);
+
+        this._spTrackerTacker.handleWhenStartTransaction(this._totalSpoWebserviceCount);
+
         let connectionResult = await this.OpenConnection();
 
         if (connectionResult === false){
-
+            this._spTrackerTacker.handleWhenFailedTransation(this._totalSpoWebserviceCount);
             return false;
         }
 
@@ -205,7 +209,6 @@ export class ApiTransactionTracker {
             let targetObj = element.getTargetObj();
             let _targetValue = element.getTargetValue();
             let tempPromise;
-
             
             if ( commandType === "add"){
 
@@ -218,7 +221,6 @@ export class ApiTransactionTracker {
                         })                 
                     })
                 );
-
             }
             else if ( commandType === "update"){
 
@@ -234,7 +236,6 @@ export class ApiTransactionTracker {
 
             }
             else if( commandType === "delete"){
-
                 tempPromise = this.delete(targetObj);
                 commandList.push(
                     new Promise(function(resolve,reject){
@@ -244,9 +245,7 @@ export class ApiTransactionTracker {
                         })                 
                     })
                 );
-
             }
-
         }
 
 
@@ -262,7 +261,7 @@ export class ApiTransactionTracker {
     private async add(target:ISPTransactionCommand,targetObj:any):Promise<any>{
 
         let result:boolean =  target.beforeAdd();
-        let ListName:string =  target.getListName();
+        let ListName:string =  target.getListName();    
 
         //target.targetObjforAdd = targetObj;
         console.log(`add Command start : ${this._completedCommand}`);
@@ -273,11 +272,14 @@ export class ApiTransactionTracker {
             .then(async (result)=>{                 
                  target.afterAdd(result);
                  this._completedCommand++
+                 this._completedSpoWebserviceCount++
+                 this._spTrackerTacker.handleWhenCompletedCommand(this._completedSpoWebserviceCount,this._totalSpoWebserviceCount);
                  console.log(`add Command completed : ${this._completedCommand}`);
                  return result;
             })
             .catch(async error=>{ 
                  target.errorWhenAdd(error);      
+                 this._spTrackerTacker.handleWhenFailedCommand(this._completedSpoWebserviceCount,this._totalSpoWebserviceCount);
                  return error;             
             }); 
         }
@@ -298,12 +300,14 @@ export class ApiTransactionTracker {
             .then(async result=>{
                 target.afterUpdate(result);
                 this._completedCommand++
-                console.log("update");
+                this._completedSpoWebserviceCount++
+                this._spTrackerTacker.handleWhenCompletedCommand(this._completedSpoWebserviceCount,this._totalSpoWebserviceCount);
                 console.log(`update Command completed : ${this._completedCommand}`);
                 return result;
             })
             .catch(async error=>{ 
-                 target.errorWhenUpdate(error);                   
+                 target.errorWhenUpdate(error);       
+                 this._spTrackerTacker.handleWhenCompletedCommand(this._completedSpoWebserviceCount,this._totalSpoWebserviceCount);            
                  return error;
             }); 
         }
@@ -322,12 +326,15 @@ export class ApiTransactionTracker {
              return pnp.sp.web.lists.getByTitle(ListName).items.getById(tgId).delete()
             .then(async result=>{
                target.afterDelete(result);
-               this._completedCommand++               
+               this._completedCommand++      
+               this._completedSpoWebserviceCount++ 
+               this._spTrackerTacker.handleWhenCompletedCommand(this._completedSpoWebserviceCount,this._totalSpoWebserviceCount);      
                console.log(`delete Command completed : ${this._completedCommand}`);
                return result;
             })
             .catch(async error=>{ 
                 target.errorWhenDelete(error);    
+                this._spTrackerTacker.handleWhenFailedCommand(this._completedSpoWebserviceCount,this._totalSpoWebserviceCount);
                 return error;               
             }); 
         }
@@ -340,6 +347,8 @@ export class ApiTransactionTracker {
         try{          
 
             target.beforeLoad();
+
+            this._spTrackerTacker.handleWhenStartTransaction(this._transactionCount);
 
             let returnedItems = []
             let results = [] as T[];
@@ -372,9 +381,9 @@ export class ApiTransactionTracker {
                         
                         if (element[props] != null){
                             tempObj[props] = element[props];
-                        }                        
+                        }                      
 
-                    }    
+                    }  
 
                     await tempObj.onCompletedLoad();
                     results.push(tempObj);                   
@@ -382,7 +391,7 @@ export class ApiTransactionTracker {
                 }
 
                 target.afterLoad(results);
-
+                this._spTrackerTacker.handleWhenCompletedTransation(this._transactionCount);
                 return results;
             }
     
@@ -390,7 +399,7 @@ export class ApiTransactionTracker {
             console.log('error - ', e);
 
             target.errorWhenLoad(e);      
-            
+            this._spTrackerTacker.handleWhenFailedTransation(this._transactionCount);
             throw e;
         }
     }
