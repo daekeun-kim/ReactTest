@@ -85,44 +85,117 @@ export class TransactionTest extends React.Component<any,any> implements ITransa
        
     }
 
-    testTransactionApi =(e) =>{
+    testTransactionApi =async (e) =>{
 
         let ApplicationInfo = new MirinaeTest("");
         ApplicationInfo.setProgressIndicator(this);
         let apiTransaction = new ApiTransactionTracker(ApplicationInfo);
-        
-/*         let header = new headerList();
-        header.Title ="test";
-        header.formID ="formid01";
-        header.status ="requested";
-        header.rqDate = new Date()
-        header.requestor = new Person();
-        header.requestor.Id = 7;
-        
-        apiTransaction.CommandForAdd(header);
-
-        let header2 = new headerList();
-        header2.Title ="test2";
-        header2.formID ="formid02";
-        header2.status ="requested";        
-        header2.rqDate = new Date();        
-        apiTransaction.CommandForAdd(header2); */
+    
 
 
-        for (let index = 0; index < 10; index++) {
+        for (let index = 0; index < 3; index++) {
             
             let header2 = new headerList();
-            header2.Title ="test" + (index +1).toString();
+            header2.Title ="mirinaeTest" + (index +1).toString();
             header2.formID ="formid" + new Date().toISOString();
             header2.status ="requested";        
             header2.rqDate = new Date();        
             apiTransaction.CommandForAdd(header2);
         }
 
-        apiTransaction.ExecuteCommand().then(res=>{
+        let result = await apiTransaction.ExecutePartialCommand();
 
-            console.log("transaciton end")
-        }); 
+        if ( result === true){
+
+            
+            for (let index = 0; index < 5; index++) {
+                
+                let header2 = new headerList();
+                header2.Title ="mirinaeTest2" + (index +1).toString();
+                header2.formID ="formid" + new Date().toISOString();
+                header2.status ="requested";        
+                header2.rqDate = new Date();        
+                apiTransaction.CommandForAdd(header2);
+            }
+
+            apiTransaction.ExecuteCommand();
+
+        }
+
+
+
+    }
+
+    testTransactionApi2 =async (e) =>{
+
+        let ApplicationInfo = new MirinaeTest("");
+        ApplicationInfo.setProgressIndicator(this);
+        let apiTransaction = new ApiTransactionTracker(ApplicationInfo);
+
+        let rstheaderList:headerList[] = await apiTransaction.LoadAll(headerList,"formID eq 'formid2'");
+        
+        for (let index = 0; index < rstheaderList.length; index++) {
+            
+            let target = rstheaderList[index]
+            
+            target.Title ="test" + (index +1).toString();
+            target.formID ="formid" +index.toString();
+            target.status ="requested";        
+            target.rqDate = new Date();        
+            apiTransaction.CommandForUpdate(target);
+        }
+
+        for (let index = 0; index < 3; index++) {
+            
+            let header2 = new headerList();
+            header2.Title ="test" + (index +1).toString();
+            header2.formID ="formid" + index.toString();
+            header2.status ="requested";        
+            header2.rqDate = new Date();        
+            apiTransaction.CommandForAdd(header2);
+        }
+
+       let result = await apiTransaction.ExecutePartialCommand();
+
+        if ( result == false){
+
+            return;
+
+        }
+        
+
+        for (let index = 0; index < rstheaderList.length; index++) {
+            
+            let target = rstheaderList[index]
+            
+            target.Title ="test" + (index +1).toString();
+            target.formID ="formid" +index.toString();
+            target.status ="update1";        
+            target.rqDate = new Date();        
+            apiTransaction.CommandForUpdate(target);
+        }
+
+        result = await apiTransaction.ExecutePartialCommand();
+
+        
+        if ( result == false){
+
+            return;
+
+        }
+
+
+        for (let index = 0; index < 3; index++) {
+            
+            let header2 = new headerList();
+            header2.Title ="test" + (index +1).toString();
+            header2.formID ="formid" + index.toString();
+            header2.status ="requested2222";        
+            header2.rqDate = new Date();        
+            apiTransaction.CommandForAdd(header2);
+        }
+
+        apiTransaction.ExecuteCommand()
 
     }
 
@@ -138,6 +211,10 @@ export class TransactionTest extends React.Component<any,any> implements ITransa
               <button onClick={
                 this.testTransactionApi
               }> Test api </button>
+
+              <button onClick={
+                this.testTransactionApi2
+              }> update api </button>
 
             <Dialog
             hidden={!this.state.isProcessing}                                                        

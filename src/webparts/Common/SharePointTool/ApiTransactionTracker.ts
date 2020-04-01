@@ -16,39 +16,58 @@ export class ApiTransactionTracker {
 
     private _totalSpoWebserviceCount:number;
     private _completedSpoWebserviceCount:number;
+    private _partialExecuteCount :number;
+    private _isOpen:boolean
 
 
     constructor(spTransactionTracker:ISPTransactionTrackerHeader){
 
+        this._isOpen = false;
         this._commandQueue = [] as ApiCommand[];        
         this._transactionCount = 0;
         this._spTrackerTacker = spTransactionTracker;        
         this._completedCommand = 0;
         this._totalSpoWebserviceCount = 0;
         this._completedSpoWebserviceCount = 0;
-        this._transactionID = spTransactionTracker.getTrackerHeaderId();
+        this._transactionID = spTransactionTracker.getTrackerHeaderId();        
+        this._partialExecuteCount = 0;
     }
 
     private async OpenConnection(){
-
-        let createHeader = this._spTrackerTacker.createTrackerHeader()
+        
+        let createHeader;
+        let transactionDetailCount =0
+        
         let apiList = []
 
-        apiList.push(
-            new Promise(function(resolve,reject){
-                createHeader.then(res=>{
-                    console.log(`createTrackerHeader`)
-                    resolve(res)
-                })                 
-            })
-        );
+        if (this._isOpen === false){
+
+            createHeader = this._spTrackerTacker.createTrackerHeader();
+            apiList.push(
+                new Promise(function(resolve,reject){
+                    createHeader.then(res=>{
+                        console.log(`createTrackerHeader`)
+                        resolve(res)
+                    })                 
+                })
+            );
+            
+        }
+
 
         for (let index = 0; index < this._commandQueue.length; index++) {
             
-            const element = this._commandQueue[index];
-            let tempPromise;
+            const element = this._commandQueue[index];   
 
+            if (element.isDetailCreated() === true){
+                transactionDetailCount++;
+                continue;
+            }
+            element.setDetailCreated();            
+            
+            let tempPromise;
             tempPromise = this._spTrackerTacker.createTrackerDetails(element);
+
             apiList.push(
                 new Promise(function(resolve,reject){
                     tempPromise.then(res=>{
@@ -59,23 +78,40 @@ export class ApiTransactionTracker {
             );
         }
 
+        
+
         return await Promise.all(apiList).then(res =>{
             console.log("connection success");
             let result = true;
+            let startindex = transactionDetailCount;
+            
             for (let index = 0; index < res.length; index++) {
+
                 const element:ItemAddResult = res[index];
                 if (element != null && element.data != null&& element.data.Id){
                     if ( index === 0){
-                        this._spTrackerTacker.setTrackerHeaderListItemId(element.data.Id);
+                        if (this._isOpen === false){
+                            this._spTrackerTacker.setTrackerHeaderListItemId(element.data.Id);
+                        }else{
+                            this._commandQueue[index+startindex].setTrackerDetailId(element.data.Id);
+                        }                        
                     }
                     else{
-                        this._commandQueue[index-1].setTrackerDetailId(element.data.Id);
+
+                        if (this._isOpen === false){
+                            this._commandQueue[index-1].setTrackerDetailId(element.data.Id);
+                        }else{
+                            this._commandQueue[index+startindex].setTrackerDetailId(element.data.Id);
+                        }
                     }
                 }
                 else{
                     result = false;
                 }                
+
             }         
+
+            this._isOpen = true;
             return result;
         }); 
 
@@ -184,12 +220,14 @@ export class ApiTransactionTracker {
     public async ExecuteCommand(){
 
         let totalTransactionCount = this._transactionCount;
-        this._totalSpoWebserviceCount = ( this._transactionCount * 2 ) + 2 // +2 for header
-        this._completedSpoWebserviceCount = this._transactionCount + 1; // start from count of detail web services
+        this._totalSpoWebserviceCount = this._isOpen === false ?( this._transactionCount * 2 ) + 2 : ( this._transactionCount * 2 ) + 1 // isOpen is true then it has header created and update else if isopen is false then it has only header update
+        this._completedSpoWebserviceCount = this._transactionCount + 1; // start from count of detail web services. completed for detail
         
         this._spTrackerTacker.setTotalSpoWebServiceCount(this._totalSpoWebserviceCount);
 
-        this._spTrackerTacker.handleWhenStartTransaction(this._totalSpoWebserviceCount);
+        if ( this._isOpen === false){
+            this._spTrackerTacker.handleWhenStartTransaction(this._totalSpoWebserviceCount);
+        }        
 
         let connectionResult = await this.OpenConnection();
 
@@ -205,6 +243,10 @@ export class ApiTransactionTracker {
         for (let index = 0; index < this._commandQueue.length; index++) {
             
             const element = this._commandQueue[index];
+            if (element.isProcessed() === true){
+                continue;
+            }
+            element.setProcessed();
             let commandType = element.getCommandType();
             let targetObj = element.getTargetObj();
             let _targetValue = element.getTargetValue();
@@ -257,6 +299,107 @@ export class ApiTransactionTracker {
         });  
 
     }
+
+
+    public async ExecutePartialCommand(){
+
+        this._partialExecuteCount++;
+        let totalTransactionCount = this._transactionCount;
+        this._totalSpoWebserviceCount = (this._transactionCount * 2 ) + 2;
+        this._completedSpoWebserviceCount = this._transactionCount + 1; // start from count of detail web services
+        
+        this._spTrackerTacker.setTotalSpoWebServiceCount(this._totalSpoWebserviceCount);
+
+        if ( this._isOpen === false){
+            this._spTrackerTacker.handleWhenStartTransaction(this._totalSpoWebserviceCount);
+        }        
+
+        let connectionResult = await this.OpenConnection();
+
+        if (connectionResult === false){
+            this._spTrackerTacker.handleWhenFailedTransation(this._totalSpoWebserviceCount);
+            return false;
+        }
+
+        let commandList = [];
+
+        console.log("excuteCommand - start");
+
+        for (let index = 0; index < this._commandQueue.length; index++) {
+
+            const element = this._commandQueue[index];
+            if (element.isProcessed() === true){
+                continue;
+            }
+            element.setProcessed();
+            let commandType = element.getCommandType();
+            let targetObj = element.getTargetObj();
+            let _targetValue = element.getTargetValue();
+            let tempPromise;
+            
+            if ( commandType === "add"){
+
+                tempPromise = this.add(targetObj,_targetValue);
+                commandList.push(
+                    new Promise(function(resolve,reject){
+                        tempPromise.then(res=>{
+                            console.log(`add api command - add`)
+                            resolve(res)
+                        })                 
+                    })
+                );
+            }
+            else if ( commandType === "update"){
+
+                tempPromise = this.update(targetObj,_targetValue); 
+                commandList.push(
+                    new Promise(function(resolve,reject){
+                        tempPromise.then(res=>{                            
+                            console.log(`add api command - update`)
+                            resolve(res)
+                        })                 
+                    })
+                );
+
+            }
+            else if( commandType === "delete"){
+                tempPromise = this.delete(targetObj);
+                commandList.push(
+                    new Promise(function(resolve,reject){
+                        tempPromise.then(res=>{
+                            console.log(`add api command - delete`)
+                            resolve(res)
+                        })                 
+                    })
+                );
+            }
+        }
+
+
+        return await Promise.all(commandList).then(async res =>{
+
+            console.log("excutePartialCommand - end");           
+
+            let transactionResult = true;   
+
+            for (let index = 0; index < this._commandQueue.length; index++) {
+
+                if (this._commandQueue[index].getTargetObj().getResult() === false){
+                    transactionResult = false;
+                    this._spTrackerTacker.handleWhenFailedTransation(this._totalSpoWebserviceCount);
+                    break;
+                }
+            }
+
+            if ( transactionResult === false){
+                await this._spTrackerTacker.updateTrackerHeader(transactionResult);
+            }
+
+            return transactionResult;
+        });  
+
+    }
+
 
     private async add(target:ISPTransactionCommand,targetObj:any):Promise<any>{
 
@@ -346,9 +489,7 @@ export class ApiTransactionTracker {
 
         try{          
 
-            target.beforeLoad();
-
-            this._spTrackerTacker.handleWhenStartTransaction(this._transactionCount);
+            target.beforeLoad();            
 
             let returnedItems = []
             let results = [] as T[];
@@ -374,32 +515,22 @@ export class ApiTransactionTracker {
 
                 for (let index = 0; index < returnedItems.length; index++) {
                     const element = returnedItems[index];
-
-                    let tempObj = new T();     
-
+                    let tempObj = new T();
                     for (var props in tempObj) {              
                         
                         if (element[props] != null){
                             tempObj[props] = element[props];
-                        }                      
-
-                    }  
-
+                        }
+                    }
                     await tempObj.onCompletedLoad();
-                    results.push(tempObj);                   
-                    
+                    results.push(tempObj);                    
                 }
-
-                target.afterLoad(results);
-                this._spTrackerTacker.handleWhenCompletedTransation(this._transactionCount);
+                target.afterLoad(results);                
                 return results;
-            }
-    
+            }    
         } catch (e){
             console.log('error - ', e);
-
             target.errorWhenLoad(e);      
-            this._spTrackerTacker.handleWhenFailedTransation(this._transactionCount);
             throw e;
         }
     }
@@ -446,6 +577,8 @@ export class ApiCommand{
     private _CommmandID:string
     private _TrackerDetailId:number;
     private _Seq:number
+    private _isProcessed:boolean;
+    private _isDetailCreated:boolean;
 
     constructor(itargetObj:ISPTransactionCommand,iCommandType:string,iTargeValue:any){
         this._targetObj = itargetObj;
@@ -454,6 +587,8 @@ export class ApiCommand{
         this._CommmandID =  Guid.newGuid().toString();
         this._TrackerDetailId= null;
         this._Seq = null;
+        this._isProcessed = false;
+        this._isDetailCreated = false;
     }
 
     public getTargetObj(){
@@ -506,6 +641,22 @@ export class ApiCommand{
 
         return this._CommandType;
 
+    }
+
+    public setProcessed(){
+        this._isProcessed = true;
+    }
+
+    public isProcessed(){
+        return this._isProcessed;
+    }
+
+    public setDetailCreated(){
+        this._isDetailCreated = true;
+    }
+
+    public isDetailCreated(){
+        return this._isDetailCreated;
     }
 
 

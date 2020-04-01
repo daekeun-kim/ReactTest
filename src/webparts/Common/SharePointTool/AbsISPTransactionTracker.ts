@@ -141,7 +141,7 @@ export abstract class AbsISPTRansactionTracker implements ISPTransactionTrackerH
     }
     createTrackerDetails(api:ApiCommand): Promise<any> {
 
-        console.log("createTrackerHeader -- start");
+        console.log("createTrackerDetails -- start");
 
         let trackerSite = this.getTrackerSharePointSite();
         let listName = this.getTrackerDetailListName();
@@ -179,10 +179,13 @@ export abstract class AbsISPTRansactionTracker implements ISPTransactionTrackerH
         let trackerSite = this.getTrackerSharePointSite();
         let listName = this.getTrackerHeaderListName();
         let trackerHeaderId = this._trackerHeaderListItemId;
+        let sResult = result === true? "success" : "failed";
+
         let web = new Web(trackerSite);
 
+
         return web.lists.getByTitle(listName).items.getById(trackerHeaderId).update({
-            Result:"success"
+            Result:sResult
         }).then(res=>{
 
             console.log("updateTrackerHeader -- end");
@@ -200,10 +203,11 @@ export abstract class AbsISPTRansactionTracker implements ISPTransactionTrackerH
         console.log("updateTrackerDetails -- start");
         let trackerSite = this.getTrackerSharePointSite();
         let listName = this.getTrackerDetailListName();
+        let sResult = result === true? "success" : "failed";
         let web = new Web(trackerSite);
         let trackerDetailId = api.getTrackerDetailId();
         return web.lists.getByTitle(listName).items.getById(trackerDetailId).update({
-            Result:"success"
+            Result:sResult
         }).then(res=>{
             console.log("updateTrackerDetails -- end");
             return true;
