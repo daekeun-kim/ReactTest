@@ -21,6 +21,10 @@ export default interface ISPTransactionCommand {
 
     getDateMemeberFields():string[];
     getPersonMemeberFields():string[];
+    getGroupMemeberFields():string[];
+    getLookupMemeberFields():string[];
+    getMultiLookupMemeberFields():string[];
+    getMultiChoiceMemeberFields():string[];
     getVirtualMemeberFields():string[];
 
     LoadQuery(filterString?:string):any;    
@@ -36,6 +40,8 @@ export default interface ISPTransactionCommand {
     getRedoValue():string;
 
     setRedoValue(targetObj:any);
+
+    customQuery(iFilterString?:string):any
 
 
 }

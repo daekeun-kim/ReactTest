@@ -4,7 +4,8 @@ import { Person } from "../../../Common/SPOType/Person";
 
 export class detailList extends AbsSPTransaction {
 
-  Title: string;
+
+
   Requestor: Person;
   RequestDate:Date
   headerID:string;
@@ -15,8 +16,7 @@ export class detailList extends AbsSPTransaction {
 
 
     super();
-    this.Title = ""
-      , this.Requestor = new Person()
+       this.Requestor = new Person()
       , this.RequestDate = null
       , this.headerID = ""
       , this.test = "";
@@ -26,6 +26,19 @@ export class detailList extends AbsSPTransaction {
 
     return "RequestDetail";
 
+  }
+
+  getMultiChoiceMemeberFields(): string[] {
+    return [];
+  }
+  getLookupMemeberFields(): string[] {
+    return [];
+  }
+  getMultiLookupMemeberFields(): string[] {
+    return [];
+  }
+  getGroupMemeberFields(): string[] {
+    return [];
   }
 
 getDateMemeberFields(): string[] {

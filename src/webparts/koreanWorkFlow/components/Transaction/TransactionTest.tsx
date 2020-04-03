@@ -194,6 +194,32 @@ export class TransactionTest extends React.Component<any,any> implements ITransa
 
     }
 
+
+    testTransactionApi5 =async (e) =>{
+
+        let ApplicationInfo = new MirinaeTest("");
+        ApplicationInfo.setProgressIndicator(this);
+        let apiTransaction = new ApiTransactionTracker(ApplicationInfo);
+
+        let rstheaderList:headerList[] = await apiTransaction.LoadAll(headerList,"headerID eq 'dsd'");
+
+        rstheaderList[0].status ="ddddd";
+        rstheaderList[0].Choice1 = ["Test1","Test3"];
+//        rstheaderList[0].group = [];
+  //      rstheaderList[0].lookup1 = null;
+        rstheaderList[0].requestor = null;
+
+
+
+
+        apiTransaction.CommandForAdd(rstheaderList[0]);
+        apiTransaction.ExecuteCommand();
+        
+
+        console.log(rstheaderList);
+
+
+    }
     testTransactionApi2 =async (e) =>{
 
         let ApplicationInfo = new MirinaeTest("");
@@ -293,6 +319,12 @@ export class TransactionTest extends React.Component<any,any> implements ITransa
         return(            
           <div className="ag-theme-balham">
               test
+
+              <button onClick={
+                this.testTransactionApi5
+              }> Test api222 </button>
+
+
               <button onClick={
                 this.testTransactionApi
               }> Test api </button>

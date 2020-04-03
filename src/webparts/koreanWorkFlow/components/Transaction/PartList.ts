@@ -18,6 +18,18 @@ export class PartList extends AbsSPTransaction {
       , this.DR_x0020_QTY = 0
   }
 
+  getMultiChoiceMemeberFields(): string[] {
+    return [];
+  }
+  getLookupMemeberFields(): string[] {
+    return [];
+  }
+  getMultiLookupMemeberFields(): string[] {
+    return [];
+  }
+  getGroupMemeberFields(): string[] {
+    return [];
+  }
   getListName(): string {
 
     return "StockAdjRequestsParts";

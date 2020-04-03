@@ -1,10 +1,12 @@
 import ISPTransactionCommand from "./ISPTransactionCommand";
 import pnp, { ODataParserBase, AttachmentFileInfo, CamlQuery,Web, ItemAddResult, sp } from "sp-pnp-js";
 import { Person } from "../SPOType/Person";
+import { LookUp } from "../SPOType/LookUp";
 
 export abstract class AbsSPTransaction implements ISPTransactionCommand {
 
     protected Id:number;
+    public Title:string
     protected Author:Person;
 
     protected _isPagedLoad:boolean;
@@ -14,16 +16,19 @@ export abstract class AbsSPTransaction implements ISPTransactionCommand {
     protected _ReDoValues:string
     protected _Result:boolean;
 
-
     constructor(){
         this.Id = null;
+        this.Title = "";
         this.Author = new Person();
         this._isPagedLoad = false;
         this._PagedCount = 100;      
-        this._Result = true;  
+        this._Result = true;          
     }    
 
-
+    abstract getMultiChoiceMemeberFields(): string[]
+    abstract getLookupMemeberFields(): string[];
+    abstract getMultiLookupMemeberFields(): string[]    
+    abstract getGroupMemeberFields(): string[];
     abstract getDateMemeberFields():string[];
     abstract getPersonMemeberFields():string[];
     abstract getVirtualMemeberFields():string[];
@@ -35,6 +40,11 @@ export abstract class AbsSPTransaction implements ISPTransactionCommand {
 
     public setPagedLoad(iflag:boolean){
         this._isPagedLoad = iflag;
+    }
+
+    public customQuery(iFilterString):Promise<any>{
+
+        return;
     }
 
     getUndoValue(): string {
@@ -82,7 +92,13 @@ export abstract class AbsSPTransaction implements ISPTransactionCommand {
 
         let memberValInDate = this.getDateMemeberFields();
         let memberValInPerson = this.getPersonMemeberFields();
+        let memberValInGroup = this.getGroupMemeberFields();
         let memeberValInVitual  = this.getVirtualMemeberFields();
+
+        let memeberValMulitiLookup  = this.getMultiLookupMemeberFields();
+        let memeberValLookupMemeber  = this.getLookupMemeberFields();
+
+        let memeberValMultiChoice  = this.getMultiChoiceMemeberFields();
         let OutofTargetMemberFields  = this.getOutofTargetMemberFields();
 
         let rstObj = {};
@@ -107,8 +123,10 @@ export abstract class AbsSPTransaction implements ISPTransactionCommand {
             if (memberValInPerson.filter(p=>p === props.toString()).length > 0){
                 
                 let tempJson = "";
-
-                if (targetValue.Id == 0  || targetValue.Id == null){
+                if (targetValue == null){
+                    tempJson = `{"${props.toString()}Id":null}`
+                }
+                else if (targetValue.Id == null){
                     tempJson = `{"${props.toString()}Id":null}`
                 }
                 else{
@@ -118,6 +136,98 @@ export abstract class AbsSPTransaction implements ISPTransactionCommand {
                 targetobj = JSON.parse(tempJson);
                 
             }
+            else if (memberValInGroup.filter(p=>p === props.toString()).length > 0){
+
+                let tempJson = "";
+                if ( targetValue.length > 0){                    
+
+                    for (let index = 0; index < targetValue.length; index++) {
+                        const element = targetValue[index];
+
+                        if (element == null){
+                            
+                        }else if (element.Id == null){
+                            
+                        }
+                        else{
+                            tempJson += `${element.Id},`
+                        }                         
+                    }
+
+                    tempJson=tempJson.substring(0,tempJson.length-1);
+                    tempJson = `{"${props.toString()}Id":{"results":[${tempJson}]}}`;
+                    
+                }else{
+                    tempJson = `{"${props.toString()}Id":{"results":[]}}`;
+                }    
+
+                targetobj = JSON.parse(tempJson);
+            } 
+            else if (memeberValLookupMemeber.filter(p=>p === props.toString()).length > 0){
+                
+                let tempJson = "";
+
+                
+                if (targetValue == null){
+                    tempJson = `{"${props.toString()}Id":null}`
+                }
+                else if (targetValue.Id == null){
+                    tempJson = `{"${props.toString()}Id":null}`
+                }
+                else{
+                    tempJson = `{"${props.toString()}Id":"${targetValue.Id}"}`
+                }
+                
+                targetobj = JSON.parse(tempJson);
+                
+            }
+            else if (memeberValMulitiLookup.filter(p=>p === props.toString()).length > 0){
+
+                let tempJson = "";
+                if ( targetValue.length > 0){                    
+
+                    for (let index = 0; index < targetValue.length; index++) {
+                        const element = targetValue[index];
+
+                        if (element == null){
+                            
+                        }
+                        else if (element.Id == null){
+                            
+                        }
+                        else{
+                            tempJson += `${element.Id},`
+                        }                         
+                    }
+
+                    tempJson=tempJson.substring(0,tempJson.length-1);
+                    tempJson = `{"${props.toString()}Id":{"results":[${tempJson}]}}`;
+                    
+                }else{
+                    tempJson = `{"${props.toString()}Id":{"results":[]}}`;
+                }
+                targetobj = JSON.parse(tempJson);
+            } 
+            else if (memeberValMultiChoice.filter(p=>p === props.toString()).length > 0){
+
+                let tempJson = "";
+                if ( targetValue.length > 0){
+
+                    for (let index = 0; index < targetValue.length; index++) {
+                        const element = targetValue[index];    
+                        tempJson += `"${element}",`
+                                                 
+                    }
+                        tempJson=tempJson.substring(0,tempJson.length-1);
+                        tempJson = `{"${props.toString()}":{"results":[${tempJson}]}}`;
+
+                }else{
+
+                    tempJson = `{"${props.toString()}":{"results":[]}}`;
+                }        
+
+                targetobj = JSON.parse(tempJson);
+            } 
             else if (memberValInDate.filter(p=>p === props.toString()).length > 0){
 
                 let tempJson = "";
@@ -130,7 +240,8 @@ export abstract class AbsSPTransaction implements ISPTransactionCommand {
                 }               
 
                 targetobj = JSON.parse(tempJson);
-            }   
+            } 
+  
             else{
 
                 let tempJson = `{"${props.toString()}":"${targetValue}"}`
@@ -153,7 +264,10 @@ export abstract class AbsSPTransaction implements ISPTransactionCommand {
     protected getAllFields(){
         
         let memberValInPerson = this.getPersonMemeberFields();
+        let memberValInGroup = this.getGroupMemeberFields();
         let memeberValInVitual  = this.getVirtualMemeberFields();
+        let memeberValMulitiLookup  = this.getMultiLookupMemeberFields();
+        let memeberValLookupMemeber  = this.getLookupMemeberFields();
         let OutofTargetMemberFields  = this.getOutofTargetMemberFields().filter(p=> p != "Author" && p != "Id");
 
         memberValInPerson.push("Author");
@@ -177,6 +291,17 @@ export abstract class AbsSPTransaction implements ISPTransactionCommand {
                 continue;
             }
 
+            if (memeberValMulitiLookup.filter(p=>p === props.toString()).length > 0){
+                rstFields.push(`${props.toString()}/Id`);
+                rstFields.push(`${props.toString()}/Title`);
+            }
+
+
+            if (memeberValLookupMemeber.filter(p=>p === props.toString()).length > 0){
+                rstFields.push(`${props.toString()}/Id`);
+                rstFields.push(`${props.toString()}/Title`);
+            }
+
             if (memberValInPerson.filter(p=>p === props.toString()).length > 0){
                 
                 rstFields.push(`${props.toString()}/Id`);
@@ -187,6 +312,16 @@ export abstract class AbsSPTransaction implements ISPTransactionCommand {
                 rstFields.push(`${props.toString()}/WorkPhone`);
                 
             }  
+            if (memberValInGroup.filter(p=>p === props.toString()).length > 0){
+                
+                rstFields.push(`${props.toString()}/Id`);
+                rstFields.push(`${props.toString()}/Title`);
+                rstFields.push(`${props.toString()}/EMail`);
+                rstFields.push(`${props.toString()}/Department`);
+                rstFields.push(`${props.toString()}/Office`);
+                rstFields.push(`${props.toString()}/WorkPhone`);
+                
+            } 
             else{
                 rstFields.push(`${props.toString()}`);
             }
@@ -299,6 +434,10 @@ export abstract class AbsSPTransaction implements ISPTransactionCommand {
     
     let selectField:string[] = this.getAllFields();
     let expandField:string[] = this.getPersonMemeberFields()
+    let expandFieldGroup:string[] = this.getGroupMemeberFields()
+    let expandFieldLookup:string[] = this.getLookupMemeberFields()
+    let expandFieldMultiLookup:string[] = this.getMultiLookupMemeberFields()
+
     
        if (this._isPagedLoad === true) {
 
@@ -308,7 +447,7 @@ export abstract class AbsSPTransaction implements ISPTransactionCommand {
                return pnp.sp.web.lists.getByTitle(this.getListName()).items
                    .select(...selectField)
                    .filter(filterString) // to integrate with OnlineForms SP, has to search against serial number
-                   .expand("Author", ...expandField)
+                   .expand("Author", ...expandField,...expandFieldGroup,...expandFieldLookup,...expandFieldMultiLookup)
                    .get()
 
            } else {
@@ -316,7 +455,7 @@ export abstract class AbsSPTransaction implements ISPTransactionCommand {
                return pnp.sp.web.lists.getByTitle(this.getListName()).items
                    .select(...selectField)
                    .filter(filterString) // to integrate with OnlineForms SP, has to search against serial number
-                   .expand("Author", ...expandField)
+                   .expand("Author", ...expandField,...expandFieldGroup,...expandFieldLookup,...expandFieldMultiLookup)
                    .get()
 
            }
@@ -328,7 +467,7 @@ export abstract class AbsSPTransaction implements ISPTransactionCommand {
                return pnp.sp.web.lists.getByTitle(this.getListName()).items
                    .select(...selectField)
                    .filter(filterString) // to integrate with OnlineForms SP, has to search against serial number
-                   .expand("Author", ...expandField)
+                   .expand("Author", ...expandField,...expandFieldGroup,...expandFieldLookup,...expandFieldMultiLookup)
                    .top(this._PagedCount).getPaged().then(res=>{
                     return res;
                    })
@@ -337,7 +476,7 @@ export abstract class AbsSPTransaction implements ISPTransactionCommand {
                return pnp.sp.web.lists.getByTitle(this.getListName()).items
                    .select(...selectField)
                    .filter(filterString) // to integrate with OnlineForms SP, has to search against serial number
-                   .expand("Author", ...expandField)
+                   .expand("Author", ...expandField,...expandFieldGroup,...expandFieldLookup,...expandFieldMultiLookup)
                    .top(this._PagedCount).getPaged().then(res=>{
                     return res;
                    })
@@ -360,6 +499,10 @@ export abstract class AbsSPTransaction implements ISPTransactionCommand {
         let memberValInDate = this.getDateMemeberFields();
         let memberValInPerson = this.getPersonMemeberFields();
         memberValInPerson.push("Author");
+        let memberValInGroup = this.getGroupMemeberFields();
+
+        let memberValInLookup = this.getLookupMemeberFields();
+        let memberValInMultiLookup = this.getMultiLookupMemeberFields();
 
         for (var props in this) {
 
@@ -375,7 +518,42 @@ export abstract class AbsSPTransaction implements ISPTransactionCommand {
                 tempDate = new Date(this[props] as any);
                 this[props] =  tempDate;
 
-            }                   
+            } 
+            else if (memberValInLookup.filter(p=>p === props.toString()).length > 0){
+
+                let tempLookup = new LookUp()
+                tempLookup.setLookUp(this[props]);
+                this[props] =  tempLookup as any;
+
+            }           
+            else if (memberValInMultiLookup.filter(p=>p === props.toString()).length > 0){
+
+                let target = this[props] as any;
+                let result = [] as LookUp[]
+
+                for (let index = 0; index < target.length; index++) {
+                    const element = target[index];
+                    let temp = new LookUp();
+                    temp.setLookUp(element)
+                    result.push(temp);                    
+                }
+
+                this[props] =  result as any;                
+            }                             
+            else if (memberValInGroup.filter(p=>p === props.toString()).length > 0){
+
+                let target = this[props] as any;
+                let result = [] as Person[]
+
+                for (let index = 0; index < target.length; index++) {
+                    const element = target[index];
+                    let temp = new Person();
+                    temp.setPerson(element)
+                    result.push(temp);                    
+                }
+
+                this[props] =  result as any;   
+            } 
         }
 
         this.setUndoValues();

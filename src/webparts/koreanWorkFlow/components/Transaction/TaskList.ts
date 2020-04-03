@@ -24,7 +24,18 @@ export class TaskList extends AbsSPTransaction {
       , this.Assigned_x0020_To = new Person()            
       
   }
-
+  getMultiChoiceMemeberFields(): string[] {
+    return [];
+  }
+  getLookupMemeberFields(): string[] {
+    return [];
+  }
+  getMultiLookupMemeberFields(): string[] {
+    return [];
+  }
+  getGroupMemeberFields(): string[] {
+    return [];
+  }
   getListName(): string {
 
     return "StockAdjRequestsTasks";

@@ -535,6 +535,58 @@ export class ApiTransactionTracker {
         }
     }
 
+    public async LoadCustomAll<T extends ISPTransactionCommand>(T:{new():T;},filterStmt?:string):Promise<T[]>{
+
+        let target = new T();
+
+        try{          
+
+            target.beforeLoad();            
+
+            let returnedItems = []
+            let results = [] as T[];
+            const getData:any = await target.customQuery(filterStmt).then(page => {
+                if(page) {
+                    if(page.results){                        
+                        // data was returned, so concat the results                    
+                        returnedItems = returnedItems.concat(page.results);
+                    }else{
+                        returnedItems = returnedItems.concat(page);
+                    }      
+                    return page;    
+                } else {
+                    return returnedItems;
+                }
+            });
+    
+            if(getData.nextUrl) {
+                 return returnedItems.concat(await this.pageData(getData,target).then(result => {
+                    return result;
+                }));
+            } else {            
+
+                for (let index = 0; index < returnedItems.length; index++) {
+                    const element = returnedItems[index];
+                    let tempObj = new T();
+                    for (var props in tempObj) {              
+                        
+                        if (element[props] != null){
+                            tempObj[props] = element[props];
+                        }
+                    }
+                    await tempObj.onCompletedLoad();
+                    results.push(tempObj);                    
+                }
+                target.afterLoad(results);                
+                return results;
+            }    
+        } catch (e){
+            console.log('error - ', e);
+            target.errorWhenLoad(e);      
+            throw e;
+        }
+    }
+
     
     pageData =  async (data:any,target:ISPTransactionCommand) => {
         try{

@@ -3,6 +3,18 @@ import { AbsSPTransaction } from "../../../Common/SPOTransactionTracker/AbsSPTra
 import { Person } from "../../../Common/SPOType/Person";
 
 export class StockAdjRequestsTasks extends AbsSPTransaction {
+  getMultiChoiceMemeberFields(): string[] {
+    return [];
+  }
+  getLookupMemeberFields(): string[] {
+    return [];
+  }
+  getMultiLookupMemeberFields(): string[] {
+    return [];
+  }
+  getGroupMemeberFields(): string[] {
+    return [];
+  }
 
   Title: string;
   FormID: string;
