@@ -3,14 +3,20 @@ import {
     Redirect,
     withRouter
   } from 'react-router-dom'
-import { ApiTransactionTracker } from '../../../Common/SharePointTool/ApiTransactionTracker';
+import { ApiTransactionTracker } from '../../../Common/SPOTransactionTracker/ApiTransactionTracker';
 import { StockAdjRequestsTasks } from './StockAdjRequestsTasks';
 import { headerList } from './headerList';
-import { Person } from '../../../Common/SharePointTool/Person';
+import { Person } from "../../../Common/SPOType/Person";
 import { MirinaeTest } from './MirinaeTest';
-import { AbsISPTRansactionTracker } from '../../../Common/SharePointTool/AbsISPTransactionTracker';
-import ITransactionProgressIndicator from '../../../Common/SharePointTool/ITransactionProgressIndicator';
+import { AbsISPTRansactionTracker } from '../../../Common/SPOTransactionTracker/AbsISPTransactionTracker';
+import ITransactionProgressIndicator from '../../../Common/SPOTransactionTracker/ITransactionProgressIndicator';
 import { ProgressIndicator, Spinner, Dialog, SpinnerSize } from 'office-ui-fabric-react';
+import { detailList } from './detailList';
+import { PartList } from './PartList';
+import { TaskList } from './TaskList';
+import { uniqBy } from '@microsoft/sp-lodash-subset';
+import { PnPClientStorage } from 'sp-pnp-js';
+import pnp  from "sp-pnp-js";
 
 
 
@@ -22,7 +28,8 @@ export class TransactionTest extends React.Component<any,any> implements ITransa
 
         this.state = {
             isProcessing:false,
-            progress:0
+            progress:0,
+            date:""
 
         }
     }
@@ -85,6 +92,64 @@ export class TransactionTest extends React.Component<any,any> implements ITransa
        
     }
 
+    
+    testTransactionApi3 =async (e) =>{
+
+        let ApplicationInfo = new MirinaeTest("");
+        ApplicationInfo.setProgressIndicator(this);
+        let apiTransaction = new ApiTransactionTracker(ApplicationInfo);
+        
+        const {date} = this.state
+
+/*         let resultPart = await apiTransaction.LoadAll(PartList, "Modified ge datetime'2020-04-02T04:50:00.942Z'")
+        let resultTask = await apiTransaction.LoadAll(TaskList, "Created ge datetime'2020-04-02T04:50:00.942Z'"); */
+
+        let resultPart = await apiTransaction.LoadAll(PartList, `Modified ge datetime'${this.state.date}'`)
+        let resultTask = await apiTransaction.LoadAll(TaskList, `Created ge datetime'${this.state.date}'`);
+
+
+        let targetValuePart = uniqBy(resultPart, p=> [p.Title,p.Part_x0020_No,p.DR_x0020_QTY].join());
+        let targetValueTask = uniqBy(resultTask, p=> [p.Title,p.Phase,p.Step,p.Assigned_x0020_To.Title].join());
+
+        debugger;
+
+        for (let index = 0; index < targetValuePart.length; index++) {
+            const element = targetValuePart[index];
+
+            if (  resultPart.filter(p=>p.Title === element.Title 
+                && p.Part_x0020_No === element.Part_x0020_No
+                && p.DR_x0020_QTY === element.DR_x0020_QTY
+                && p.Title === element.Title
+                ).length > 1){
+
+                    ///console.log(element.Title+ " Part")
+                   // console.log(element.Title);
+
+                    //pnp.sp.web.lists.getByTitle("StockAdjRequestsParts").items.getById(element.getId()).recycle()
+                }
+
+
+            
+        }
+        for (let index = 0; index < targetValueTask.length; index++) {
+            const element2 = targetValueTask[index];
+
+            if (  resultTask.filter(p=>p.FormID === element2.FormID 
+                && p.Phase === element2.Phase
+                && p.Step === element2.Step
+                && p.Assigned_x0020_To.Title === element2.Assigned_x0020_To.Title
+             ).length > 1){
+
+                    //pnp.sp.web.lists.getByTitle("StockAdjRequestsTasks").items.getById(element2.getId()).recycle()
+
+                    //console.log(element2.Title+ " task")
+                    console.log(element2.FormID);
+                }            
+        }
+
+    }
+
+
     testTransactionApi =async (e) =>{
 
         let ApplicationInfo = new MirinaeTest("");
@@ -103,7 +168,10 @@ export class TransactionTest extends React.Component<any,any> implements ITransa
             apiTransaction.CommandForAdd(header2);
         }
 
+
+
         let result = await apiTransaction.ExecutePartialCommand();
+
 
         if ( result === true){
 
@@ -155,13 +223,18 @@ export class TransactionTest extends React.Component<any,any> implements ITransa
             apiTransaction.CommandForAdd(header2);
         }
 
+
        let result = await apiTransaction.ExecutePartialCommand();
+
+       
 
         if ( result == false){
 
             return;
 
         }
+
+
         
 
         for (let index = 0; index < rstheaderList.length; index++) {
@@ -175,7 +248,19 @@ export class TransactionTest extends React.Component<any,any> implements ITransa
             apiTransaction.CommandForUpdate(target);
         }
 
+        
+        let detail = new detailList();
+        detail.Title ="Error";
+ 
+        apiTransaction.CommandForAdd(detail);
+
+
         result = await apiTransaction.ExecutePartialCommand();
+
+        console.log("ExecutePartialCommand  ");
+        console.log(result);
+        //error
+        debugger;
 
         
         if ( result == false){
@@ -216,6 +301,17 @@ export class TransactionTest extends React.Component<any,any> implements ITransa
                 this.testTransactionApi2
               }> update api </button>
 
+
+            <button onClick={
+                    this.testTransactionApi3
+              }> TEST </button>
+yrd
+            <input 
+                            name="date" value={this.state.date}
+                           type="text"
+                            onChange={this.handleChange} />   
+
+
             <Dialog
             hidden={!this.state.isProcessing}                                                        
             modalProps={{                
@@ -225,6 +321,7 @@ export class TransactionTest extends React.Component<any,any> implements ITransa
             <div style={{height:"120px",width:"150px",left:"3%",position:"relative"}}>          
                 <Spinner size={ SpinnerSize.large} label='Processing...'/>              
             </div> 
+
             
             <div>
                 {Math.round(this.state.progress * 100) }% completed

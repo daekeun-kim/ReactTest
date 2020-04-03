@@ -1,6 +1,6 @@
 import ISPTransactionCommand from "./ISPTransactionCommand";
 import pnp, { ODataParserBase, AttachmentFileInfo, CamlQuery,Web, ItemAddResult, sp } from "sp-pnp-js";
-import { Person } from "./Person";
+import { Person } from "../SPOType/Person";
 
 export abstract class AbsSPTransaction implements ISPTransactionCommand {
 

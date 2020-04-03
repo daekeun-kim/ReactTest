@@ -1,6 +1,6 @@
 import ISPTransactionCommand from "./ISPTransactionCommand"
 import pnp, { ODataParserBase, AttachmentFileInfo, CamlQuery,Web, ItemAddResult } from "sp-pnp-js";
-import { Person } from "./Person";
+import { Person } from "../SPOType/Person";
 import ISPTransactionTrackerHeader from "./ISPTransactionTrackerHeader";
 import { Guid } from "@microsoft/sp-core-library";
 

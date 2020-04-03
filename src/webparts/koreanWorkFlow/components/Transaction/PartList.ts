@@ -2,46 +2,40 @@ import pnp  from "sp-pnp-js";
 import { AbsSPTransaction } from "../../../Common/SPOTransactionTracker/AbsSPTransaction";
 import { Person } from "../../../Common/SPOType/Person";
 
-export class headerList extends AbsSPTransaction {
+export class PartList extends AbsSPTransaction {
 
   Title: string;
-  headerID:string;
-  requestor: Person;
-  formID:string;  
-  status:string;
-  rqDate:Date
-   
+  Part_x0020_No:string;
+  DR_x0020_QTY:number;
+
+
   constructor() {
 
 
     super();
-    this.Title = ""    
-      , this.headerID = ""
-      , this.requestor = new Person()
-      , this.formID = ""
-      , this.status = ""
-      , this.rqDate = null
-
+    this.Title = ""      
+      , this.Part_x0020_No = ""
+      , this.DR_x0020_QTY = 0
   }
 
   getListName(): string {
 
-    return "RequestHeader";
+    return "StockAdjRequestsParts";
 
   }
 
 getDateMemeberFields(): string[] {
     
-    return ["rqDate"];
+    return [];
 }
 getPersonMemeberFields(): string[] {
-    return ["requestor"];
+    return [];
 }
 getVirtualMemeberFields(): string[] {
     return [];
 }
 getFormID(){
-    return this.headerID;
+    return this.Title;
 }
 
 }

@@ -1,6 +1,6 @@
 import pnp  from "sp-pnp-js";
-import { AbsSPTransaction } from "../../../Common/SharePointTool/AbsSPTransaction";
-import { Person } from "../../../Common/SharePointTool/Person";
+import { AbsSPTransaction } from "../../../Common/SPOTransactionTracker/AbsSPTransaction";
+import { Person } from "../../../Common/SPOType/Person";
 
 export class StockAdjRequestsTasks extends AbsSPTransaction {
 
