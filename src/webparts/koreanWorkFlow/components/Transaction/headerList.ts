@@ -49,6 +49,9 @@ export class headerList extends AbsSPTransaction {
   getGroupMemeberFields(): string[] {
     return ["group"];
   }
+  getCalculatedMemeberFields(): string[] {
+    return [];
+  }
 
   getListName(): string {
 

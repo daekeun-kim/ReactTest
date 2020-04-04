@@ -25,6 +25,7 @@ export abstract class AbsSPTransaction implements ISPTransactionCommand {
         this._Result = true;          
     }    
 
+    abstract getCalculatedMemeberFields(): string[]
     abstract getMultiChoiceMemeberFields(): string[]
     abstract getLookupMemeberFields(): string[];
     abstract getMultiLookupMemeberFields(): string[]    
@@ -94,6 +95,7 @@ export abstract class AbsSPTransaction implements ISPTransactionCommand {
         let memberValInPerson = this.getPersonMemeberFields();
         let memberValInGroup = this.getGroupMemeberFields();
         let memeberValInVitual  = this.getVirtualMemeberFields();
+        let memeberValInCaculated  = this.getCalculatedMemeberFields();
 
         let memeberValMulitiLookup  = this.getMultiLookupMemeberFields();
         let memeberValLookupMemeber  = this.getLookupMemeberFields();
@@ -113,6 +115,10 @@ export abstract class AbsSPTransaction implements ISPTransactionCommand {
             }
 
             if (memeberValInVitual.filter(p=>p === props.toString()).length > 0){
+                continue;
+            }
+
+            if (memeberValInCaculated.filter(p=>p === props.toString()).length > 0){
                 continue;
             }
             

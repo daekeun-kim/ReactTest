@@ -15,6 +15,9 @@ export class StockAdjRequestsTasks extends AbsSPTransaction {
   getGroupMemeberFields(): string[] {
     return [];
   }
+  getCalculatedMemeberFields(): string[] {
+    return [];
+  }
 
   Title: string;
   FormID: string;

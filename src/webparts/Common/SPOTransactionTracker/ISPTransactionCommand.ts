@@ -19,7 +19,9 @@ export default interface ISPTransactionCommand {
     getTargetObjForAdd():any;
     getTargetObjForUpdate():any;
 
+    
     getDateMemeberFields():string[];
+    getCalculatedMemeberFields():string[];
     getPersonMemeberFields():string[];
     getGroupMemeberFields():string[];
     getLookupMemeberFields():string[];

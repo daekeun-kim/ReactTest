@@ -30,6 +30,9 @@ export class PartList extends AbsSPTransaction {
   getGroupMemeberFields(): string[] {
     return [];
   }
+  getCalculatedMemeberFields(): string[] {
+    return [];
+  }
   getListName(): string {
 
     return "StockAdjRequestsParts";

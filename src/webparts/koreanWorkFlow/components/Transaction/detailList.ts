@@ -6,6 +6,7 @@ export class detailList extends AbsSPTransaction {
 
 
 
+
   Requestor: Person;
   RequestDate:Date
   headerID:string;
@@ -27,7 +28,9 @@ export class detailList extends AbsSPTransaction {
     return "RequestDetail";
 
   }
-
+  getCalculatedMemeberFields(): string[] {
+    return [];
+  }
   getMultiChoiceMemeberFields(): string[] {
     return [];
   }

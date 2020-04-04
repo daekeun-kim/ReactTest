@@ -36,6 +36,9 @@ export class TaskList extends AbsSPTransaction {
   getGroupMemeberFields(): string[] {
     return [];
   }
+  getCalculatedMemeberFields(): string[] {
+    return [];
+  }
   getListName(): string {
 
     return "StockAdjRequestsTasks";
