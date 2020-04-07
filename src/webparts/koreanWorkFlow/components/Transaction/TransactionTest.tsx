@@ -208,6 +208,7 @@ export class TransactionTest extends React.Component<any,any> implements ITransa
 //        rstheaderList[0].group = [];
   //      rstheaderList[0].lookup1 = null;
         rstheaderList[0].requestor = null;
+        rstheaderList[0].YesOrNo = true;
 
 
 
@@ -322,7 +323,7 @@ export class TransactionTest extends React.Component<any,any> implements ITransa
 
               <button onClick={
                 this.testTransactionApi5
-              }> Test api222 </button>
+              }> TEst with header list </button>
 
 
               <button onClick={

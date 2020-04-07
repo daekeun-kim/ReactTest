@@ -19,6 +19,8 @@ export class headerList extends AbsSPTransaction {
   lookup1:LookUp;
   lookup2:LookUp[];
   group:Person[];
+  Number:number;
+  YesOrNo:boolean;
    
   constructor() {
 
@@ -34,6 +36,8 @@ export class headerList extends AbsSPTransaction {
       , this.group = [] as Person[]
       , this.lookup1 = new LookUp()
       , this.lookup2 = [] as LookUp[]
+      ,this.Number = null
+      ,this.YesOrNo = null;
 
   }
 

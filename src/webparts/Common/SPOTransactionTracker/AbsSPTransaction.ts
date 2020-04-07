@@ -35,6 +35,14 @@ export abstract class AbsSPTransaction implements ISPTransactionCommand {
     abstract getVirtualMemeberFields():string[];
     abstract getListName():string;
 
+    public setId(Id:number){
+        this.Id = Id;        
+    }
+
+    public setTitle(iTitle:string){
+        this.Title = iTitle
+    }
+
     public setPageCount(iCount:number){
         this._PagedCount = iCount;
     }
@@ -246,13 +254,33 @@ export abstract class AbsSPTransaction implements ISPTransactionCommand {
                 }               
 
                 targetobj = JSON.parse(tempJson);
-            } 
-  
-            else{
+            }  
+            else if (typeof targetValue == "boolean"){
 
-                let tempJson = `{"${props.toString()}":"${targetValue}"}`
+                let tempJson = "";
+
+                if ( targetValue == null){
+                    tempJson = `{"${props.toString()}":null}`
+                }
+                else{
+                    tempJson = `{"${props.toString()}":${targetValue}}`
+                }
+                console.log(tempJson);
                 targetobj = JSON.parse(tempJson);
 
+            }
+            else{
+
+                let tempJson = "";
+
+                if ( targetValue == null){
+                    tempJson = `{"${props.toString()}":null}`
+                }
+                else{
+                    tempJson = `{"${props.toString()}":"${targetValue}"}`
+                }
+                console.log(tempJson);
+                targetobj = JSON.parse(tempJson);
             }
 
             
