@@ -135,6 +135,8 @@ export class ApiTransactionTracker {
 
         console.log("start udpdate header")
         completedHedaerUpdate = await this._spTrackerTacker.updateTrackerHeader(transactionResult,this._currentTaskName);
+        this._completedSpoWebserviceCount++
+        this._spTrackerTacker.handleWhenCompletedCommand(this._completedSpoWebserviceCount,this._totalSpoWebserviceCount,this._currentTaskName);
 
         console.log("completed udpdate header")
         
