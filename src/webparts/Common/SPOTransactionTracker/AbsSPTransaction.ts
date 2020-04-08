@@ -548,9 +548,16 @@ export abstract class AbsSPTransaction implements ISPTransactionCommand {
 
             }else if (memberValInDate.filter(p=>p === props.toString()).length > 0){
 
-                let tempDate;                
-                tempDate = new Date(this[props] as any);
-                this[props] =  tempDate;
+                let tempDate;      
+                
+                if (this[props] != null){
+
+                    tempDate = new Date(this[props] as any);
+                    this[props] =  tempDate;
+
+                }else{
+                    this[props] =  tempDate;
+                }
 
             } 
             else if (memberValInLookup.filter(p=>p === props.toString()).length > 0){
