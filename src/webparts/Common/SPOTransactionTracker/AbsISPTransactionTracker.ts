@@ -43,42 +43,42 @@ export abstract class AbsISPTRansactionTracker implements ISPTransactionTrackerH
     }
 
 
-    handleWhenStartTransaction(TotalTransactionCount: number): void {
+    handleWhenStartTransaction(TotalTransactionCount: number,taskName?:string): void {
 
         if ( this._hasProgressIndicator === true){
             
-            this._progressIndicator.handleProgressWhenStartTransaction(TotalTransactionCount);
+            this._progressIndicator.handleProgressWhenStartTransaction(TotalTransactionCount,taskName);
         }
     }
-    handleWhenCompletedCommand(CompletedTransactionCount: number, TotalTransactionCount: number): void {
+    handleWhenCompletedCommand(CompletedTransactionCount: number, TotalTransactionCount: number,taskName?:string): void {
 
         if ( this._hasProgressIndicator === true){
             
-            this._progressIndicator.handleProgressWhenCompletedCommand(CompletedTransactionCount,TotalTransactionCount);
+            this._progressIndicator.handleProgressWhenCompletedCommand(CompletedTransactionCount,TotalTransactionCount,taskName);
         }
   
     }
-    handleWhenFailedCommand(CompletedTransactionCount: number, TotalTransactionCount: number): void {
+    handleWhenFailedCommand(CompletedTransactionCount: number, TotalTransactionCount: number,taskName?:string): void {
 
         if ( this._hasProgressIndicator === true){
             
-            this._progressIndicator.handleProgressWhenFailedCommand(CompletedTransactionCount,TotalTransactionCount);
+            this._progressIndicator.handleProgressWhenFailedCommand(CompletedTransactionCount,TotalTransactionCount,taskName);
         }
 
     }
-    handleWhenCompletedTransation(TotalTransactionCount: number): void {
+    handleWhenCompletedTransation(TotalTransactionCount: number,taskName?:string): void {
 
         if ( this._hasProgressIndicator === true){
             
-            this._progressIndicator.handleProgressWhenCompletedTransation(TotalTransactionCount);
+            this._progressIndicator.handleProgressWhenCompletedTransation(TotalTransactionCount,taskName);
         }
      
     }
-    handleWhenFailedTransation(TotalTransactionCount: number): void {
+    handleWhenFailedTransation(TotalTransactionCount: number,taskName?:string): void {
 
         if ( this._hasProgressIndicator === true){
             
-            this._progressIndicator.handleProgressWhenFailedTransation(TotalTransactionCount);
+            this._progressIndicator.handleProgressWhenFailedTransation(TotalTransactionCount,taskName);
         }
 
     }
@@ -108,7 +108,7 @@ export abstract class AbsISPTRansactionTracker implements ISPTransactionTrackerH
     getTrackerHeaderId(): string {
         return this._trackerHeaderId;
     }
-    createTrackerHeader(): Promise<any> {
+    createTrackerHeader(taskName?:string): Promise<any> {
 
 
         console.log("createTrackerHeader -- start");
@@ -129,15 +129,15 @@ export abstract class AbsISPTRansactionTracker implements ISPTransactionTrackerH
         }).then((result:ItemAddResult)=>{
             console.log("createTrackerHeader -- end");
             this._completedSpoWebServiceCount++
-            this.handleWhenCompletedCommand(this._completedSpoWebServiceCount,this._totalSpoWebServiceCount);
+            this.handleWhenCompletedCommand(this._completedSpoWebServiceCount,this._totalSpoWebServiceCount,taskName);
             return result;
         }).catch(error=>{
-            this.handleWhenFailedCommand(this._completedSpoWebServiceCount,this._totalSpoWebServiceCount);
+            this.handleWhenFailedCommand(this._completedSpoWebServiceCount,this._totalSpoWebServiceCount,taskName);
             return error;
         });
 
     }
-    createTrackerDetails(api:ApiCommand): Promise<any> {
+    createTrackerDetails(api:ApiCommand,taskName?:string): Promise<any> {
 
         console.log("createTrackerDetails -- start");
 
@@ -162,16 +162,16 @@ export abstract class AbsISPTRansactionTracker implements ISPTransactionTrackerH
 
         }).then((result:ItemAddResult)=>{
             this._completedSpoWebServiceCount++
-            this.handleWhenCompletedCommand(this._completedSpoWebServiceCount,this._totalSpoWebServiceCount);            
+            this.handleWhenCompletedCommand(this._completedSpoWebServiceCount,this._totalSpoWebServiceCount,taskName);            
             console.log("createTrackerDetails -- end");            
             return result;
         }).catch(error=>{
-            this.handleWhenFailedCommand(this._completedSpoWebServiceCount,this._totalSpoWebServiceCount);
+            this.handleWhenFailedCommand(this._completedSpoWebServiceCount,this._totalSpoWebServiceCount,taskName);
             return error;
         });
 
     }
-    updateTrackerHeader(result: boolean): Promise<boolean> {
+    updateTrackerHeader(result: boolean,taskName?:string): Promise<boolean> {
 
         console.log("updateTrackerHeader -- start");
         let trackerSite = this.getTrackerSharePointSite();
@@ -188,11 +188,11 @@ export abstract class AbsISPTRansactionTracker implements ISPTransactionTrackerH
 
             console.log("updateTrackerHeader -- end");
             this._completedSpoWebServiceCount++
-            this.handleWhenCompletedCommand(this._completedSpoWebServiceCount,this._totalSpoWebServiceCount);
+            this.handleWhenCompletedCommand(this._completedSpoWebServiceCount,this._totalSpoWebServiceCount,taskName);
             return true;
 
         }).catch(error=>{
-            this.handleWhenFailedCommand(this._completedSpoWebServiceCount,this._totalSpoWebServiceCount);
+            this.handleWhenFailedCommand(this._completedSpoWebServiceCount,this._totalSpoWebServiceCount,taskName);
             return false;
         });
     }

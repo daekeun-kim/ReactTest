@@ -18,6 +18,7 @@ export class ApiTransactionTracker {
     private _completedSpoWebserviceCount:number;
     private _partialExecuteCount :number;
     private _isOpen:boolean
+    private _currentTaskName:string;
 
 
     constructor(spTransactionTracker:ISPTransactionTrackerHeader){
@@ -31,6 +32,7 @@ export class ApiTransactionTracker {
         this._completedSpoWebserviceCount = 0;
         this._transactionID = spTransactionTracker.getTrackerHeaderId();        
         this._partialExecuteCount = 0;
+        this._currentTaskName = "";
     }
 
     private async OpenConnection(){
@@ -42,7 +44,7 @@ export class ApiTransactionTracker {
 
         if (this._isOpen === false){
 
-            createHeader = this._spTrackerTacker.createTrackerHeader();
+            createHeader = this._spTrackerTacker.createTrackerHeader(this._currentTaskName);
             apiList.push(
                 new Promise(function(resolve,reject){
                     createHeader.then(res=>{
@@ -66,7 +68,7 @@ export class ApiTransactionTracker {
             element.setDetailCreated();            
             
             let tempPromise;
-            tempPromise = this._spTrackerTacker.createTrackerDetails(element);
+            tempPromise = this._spTrackerTacker.createTrackerDetails(element,this._currentTaskName);
 
             apiList.push(
                 new Promise(function(resolve,reject){
@@ -126,13 +128,13 @@ export class ApiTransactionTracker {
 
             if (this._commandQueue[index].getTargetObj().getResult() === false){
                 transactionResult = false;
-                this._spTrackerTacker.handleWhenFailedTransation(this._totalSpoWebserviceCount);
+                this._spTrackerTacker.handleWhenFailedTransation(this._totalSpoWebserviceCount,this._currentTaskName);
                 break;
             }
         }
 
         console.log("start udpdate header")
-        completedHedaerUpdate = await this._spTrackerTacker.updateTrackerHeader(transactionResult);
+        completedHedaerUpdate = await this._spTrackerTacker.updateTrackerHeader(transactionResult,this._currentTaskName);
 
         console.log("completed udpdate header")
         
@@ -142,7 +144,7 @@ export class ApiTransactionTracker {
             let result = element.getTargetObj().getResult();
             
             let tempPromise;
-            tempPromise = this._spTrackerTacker.updateTrackerDetails(result,element);
+            tempPromise = this._spTrackerTacker.updateTrackerDetails(result,element,this._currentTaskName);
             apiList.push(
                 new Promise(function(resolve,reject){
                     tempPromise.then(res=>{
@@ -162,7 +164,7 @@ export class ApiTransactionTracker {
         console.log("return  - completed header");
         console.log(completedHedaerUpdate);
 
-        this._spTrackerTacker.handleWhenCompletedTransation(this._transactionCount);
+        this._spTrackerTacker.handleWhenCompletedTransation(this._transactionCount,this._currentTaskName);
         return completedHedaerUpdate;
 
     }
@@ -217,7 +219,9 @@ export class ApiTransactionTracker {
 
     }
     
-    public async ExecuteCommand(){
+    public async ExecuteCommand(taskName?:string){
+
+        this._currentTaskName = taskName != null ? taskName:"";
 
         let totalTransactionCount = this._transactionCount;
         this._totalSpoWebserviceCount = this._isOpen === false ?( this._transactionCount * 2 ) + 2 : ( this._transactionCount * 2 ) + 1 // isOpen is true then it has header created and update else if isopen is false then it has only header update
@@ -226,13 +230,13 @@ export class ApiTransactionTracker {
         this._spTrackerTacker.setTotalSpoWebServiceCount(this._totalSpoWebserviceCount);
 
         if ( this._isOpen === false){
-            this._spTrackerTacker.handleWhenStartTransaction(this._totalSpoWebserviceCount);
+            this._spTrackerTacker.handleWhenStartTransaction(this._totalSpoWebserviceCount,taskName);
         }        
 
         let connectionResult = await this.OpenConnection();
 
         if (connectionResult === false){
-            this._spTrackerTacker.handleWhenFailedTransation(this._totalSpoWebserviceCount);
+            this._spTrackerTacker.handleWhenFailedTransation(this._totalSpoWebserviceCount,taskName);
             return false;
         }
 
@@ -254,7 +258,7 @@ export class ApiTransactionTracker {
             
             if ( commandType === "add"){
 
-                tempPromise = this.add(targetObj,_targetValue);
+                tempPromise = this.add(targetObj,_targetValue,taskName);
                 commandList.push(
                     new Promise(function(resolve,reject){
                         tempPromise.then(res=>{
@@ -266,7 +270,7 @@ export class ApiTransactionTracker {
             }
             else if ( commandType === "update"){
 
-                tempPromise = this.update(targetObj,_targetValue); 
+                tempPromise = this.update(targetObj,_targetValue,taskName); 
                 commandList.push(
                     new Promise(function(resolve,reject){
                         tempPromise.then(res=>{                            
@@ -278,7 +282,7 @@ export class ApiTransactionTracker {
 
             }
             else if( commandType === "delete"){
-                tempPromise = this.delete(targetObj);
+                tempPromise = this.delete(targetObj,taskName);
                 commandList.push(
                     new Promise(function(resolve,reject){
                         tempPromise.then(res=>{
@@ -301,7 +305,9 @@ export class ApiTransactionTracker {
     }
 
 
-    public async ExecutePartialCommand(){
+    public async ExecutePartialCommand(taskName?:string){
+
+        this._currentTaskName = taskName != null ? taskName:"";
 
         this._partialExecuteCount++;
         let totalTransactionCount = this._transactionCount;
@@ -311,13 +317,13 @@ export class ApiTransactionTracker {
         this._spTrackerTacker.setTotalSpoWebServiceCount(this._totalSpoWebserviceCount);
 
         if ( this._isOpen === false){
-            this._spTrackerTacker.handleWhenStartTransaction(this._totalSpoWebserviceCount);
+            this._spTrackerTacker.handleWhenStartTransaction(this._totalSpoWebserviceCount,taskName);
         }        
 
         let connectionResult = await this.OpenConnection();
 
         if (connectionResult === false){
-            this._spTrackerTacker.handleWhenFailedTransation(this._totalSpoWebserviceCount);
+            this._spTrackerTacker.handleWhenFailedTransation(this._totalSpoWebserviceCount,taskName);
             return false;
         }
 
@@ -339,7 +345,7 @@ export class ApiTransactionTracker {
             
             if ( commandType === "add"){
 
-                tempPromise = this.add(targetObj,_targetValue);
+                tempPromise = this.add(targetObj,_targetValue,taskName);
                 commandList.push(
                     new Promise(function(resolve,reject){
                         tempPromise.then(res=>{
@@ -351,7 +357,7 @@ export class ApiTransactionTracker {
             }
             else if ( commandType === "update"){
 
-                tempPromise = this.update(targetObj,_targetValue); 
+                tempPromise = this.update(targetObj,_targetValue,taskName); 
                 commandList.push(
                     new Promise(function(resolve,reject){
                         tempPromise.then(res=>{                            
@@ -363,7 +369,7 @@ export class ApiTransactionTracker {
 
             }
             else if( commandType === "delete"){
-                tempPromise = this.delete(targetObj);
+                tempPromise = this.delete(targetObj,taskName);
                 commandList.push(
                     new Promise(function(resolve,reject){
                         tempPromise.then(res=>{
@@ -386,7 +392,7 @@ export class ApiTransactionTracker {
 
                 if (this._commandQueue[index].getTargetObj().getResult() === false){
                     transactionResult = false;
-                    this._spTrackerTacker.handleWhenFailedTransation(this._totalSpoWebserviceCount);
+                    this._spTrackerTacker.handleWhenFailedTransation(this._totalSpoWebserviceCount,taskName);
                     break;
                 }
             }
@@ -401,7 +407,7 @@ export class ApiTransactionTracker {
     }
 
 
-    private async add(target:ISPTransactionCommand,targetObj:any):Promise<any>{
+    private async add(target:ISPTransactionCommand,targetObj:any,taskName?:string):Promise<any>{
 
         let result:boolean =  target.beforeAdd();
         let ListName:string =  target.getListName();    
@@ -416,19 +422,19 @@ export class ApiTransactionTracker {
                  target.afterAdd(result);
                  this._completedCommand++
                  this._completedSpoWebserviceCount++
-                 this._spTrackerTacker.handleWhenCompletedCommand(this._completedSpoWebserviceCount,this._totalSpoWebserviceCount);
+                 this._spTrackerTacker.handleWhenCompletedCommand(this._completedSpoWebserviceCount,this._totalSpoWebserviceCount,taskName);
                  console.log(`add Command completed : ${this._completedCommand}`);
                  return result;
             })
             .catch(async error=>{ 
                  target.errorWhenAdd(error);      
-                 this._spTrackerTacker.handleWhenFailedCommand(this._completedSpoWebserviceCount,this._totalSpoWebserviceCount);
+                 this._spTrackerTacker.handleWhenFailedCommand(this._completedSpoWebserviceCount,this._totalSpoWebserviceCount,taskName);
                  return error;             
             }); 
         }
     }
 
-    private async update(target:ISPTransactionCommand,targetObj:any):Promise<any>{
+    private async update(target:ISPTransactionCommand,targetObj:any,taskName?:string):Promise<any>{
 
         let result:boolean = target.beforeUpdate();
         let ListName:string =  target.getListName();
@@ -444,19 +450,19 @@ export class ApiTransactionTracker {
                 target.afterUpdate(result);
                 this._completedCommand++
                 this._completedSpoWebserviceCount++
-                this._spTrackerTacker.handleWhenCompletedCommand(this._completedSpoWebserviceCount,this._totalSpoWebserviceCount);
+                this._spTrackerTacker.handleWhenCompletedCommand(this._completedSpoWebserviceCount,this._totalSpoWebserviceCount,taskName);
                 console.log(`update Command completed : ${this._completedCommand}`);
                 return result;
             })
             .catch(async error=>{ 
                  target.errorWhenUpdate(error);       
-                 this._spTrackerTacker.handleWhenCompletedCommand(this._completedSpoWebserviceCount,this._totalSpoWebserviceCount);            
+                 this._spTrackerTacker.handleWhenCompletedCommand(this._completedSpoWebserviceCount,this._totalSpoWebserviceCount,taskName);            
                  return error;
             }); 
         }
     }
 
-    private async delete(target:ISPTransactionCommand):Promise<any>{
+    private async delete(target:ISPTransactionCommand,taskName?:string):Promise<any>{
 
         let result:boolean =  target.beforeDelete();
         let ListName:string =  target.getListName();
@@ -471,13 +477,13 @@ export class ApiTransactionTracker {
                target.afterDelete(result);
                this._completedCommand++      
                this._completedSpoWebserviceCount++ 
-               this._spTrackerTacker.handleWhenCompletedCommand(this._completedSpoWebserviceCount,this._totalSpoWebserviceCount);      
+               this._spTrackerTacker.handleWhenCompletedCommand(this._completedSpoWebserviceCount,this._totalSpoWebserviceCount,taskName);      
                console.log(`delete Command completed : ${this._completedCommand}`);
                return result;
             })
             .catch(async error=>{ 
                 target.errorWhenDelete(error);    
-                this._spTrackerTacker.handleWhenFailedCommand(this._completedSpoWebserviceCount,this._totalSpoWebserviceCount);
+                this._spTrackerTacker.handleWhenFailedCommand(this._completedSpoWebserviceCount,this._totalSpoWebserviceCount,taskName);
                 return error;               
             }); 
         }

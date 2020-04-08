@@ -29,7 +29,8 @@ export class TransactionTest extends React.Component<any,any> implements ITransa
         this.state = {
             isProcessing:false,
             progress:0,
-            date:""
+            date:"",
+            taskName:""
 
         }
     }
@@ -58,14 +59,15 @@ export class TransactionTest extends React.Component<any,any> implements ITransa
         console.log(this.state);    
     }
 
-    handleProgressWhenStartTransaction(TotalTransactionCount: number): void {
+    handleProgressWhenStartTransaction(TotalTransactionCount: number,taskName?:string): void {
         this.setState({
             progress:0
             ,isProcessing:true
+            ,taskName:taskName
         })
 
     }
-    handleProgressWhenCompletedCommand(CompletedTransactionCount: number, TotalTransactionCount: number): void {
+    handleProgressWhenCompletedCommand(CompletedTransactionCount: number, TotalTransactionCount: number,taskName?:string): void {
 
         let percentage = Math.round((CompletedTransactionCount / TotalTransactionCount) * 100) /100
 
@@ -73,22 +75,24 @@ export class TransactionTest extends React.Component<any,any> implements ITransa
 
         this.setState({
             progress:percentage
+            ,taskName:taskName
         })
         
     }
-    handleProgressWhenFailedCommand(CompletedTransactionCount: number, TotalTransactionCount: number): void {
+    handleProgressWhenFailedCommand(CompletedTransactionCount: number, TotalTransactionCount: number,taskName?:string): void {
        
     }
-    handleProgressWhenCompletedTransation(TotalTransactionCount: number): void {
+    handleProgressWhenCompletedTransation(TotalTransactionCount: number,taskName?:string): void {
 
 
         this.setState({
-            progress:100
+            progress:1
             ,isProcessing:false
+            ,taskName:taskName
         })
         
     }
-    handleProgressWhenFailedTransation(TotalTransactionCount: number): void {
+    handleProgressWhenFailedTransation(TotalTransactionCount: number,taskName?:string): void {
        
     }
 
@@ -170,7 +174,7 @@ export class TransactionTest extends React.Component<any,any> implements ITransa
 
 
 
-        let result = await apiTransaction.ExecutePartialCommand();
+        let result = await apiTransaction.ExecutePartialCommand("SubTask");
 
 
         if ( result === true){
@@ -186,7 +190,7 @@ export class TransactionTest extends React.Component<any,any> implements ITransa
                 apiTransaction.CommandForAdd(header2);
             }
 
-            apiTransaction.ExecuteCommand();
+            apiTransaction.ExecuteCommand("LastTask");
 
         }
 
@@ -357,10 +361,10 @@ yrd
 
             
             <div>
-                {Math.round(this.state.progress * 100) }% completed
+                {this.state.taskName}: {Math.round(this.state.progress * 100) }% completed 
               <ProgressIndicator label="" description="" percentComplete={this.state.progress} />
             </div>
-             </Dialog>
+            </Dialog>
 
         </div>
         );

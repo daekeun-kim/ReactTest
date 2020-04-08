@@ -14,16 +14,16 @@ export default interface ISPTransactionTrackerHeader {
     setTrackerHeaderListItemId(iListItemNumber:number):void
     setTotalSpoWebServiceCount(iTotalSpoWebServiceCount:number):void
     
-    createTrackerHeader():Promise<any>
-    createTrackerDetails(api:ApiCommand):Promise<any>
+    createTrackerHeader(taskName?:string):Promise<any>
+    createTrackerDetails(api:ApiCommand,taskName?:string):Promise<any>
 
-    updateTrackerHeader(result:boolean):Promise<boolean>
-    updateTrackerDetails(result:boolean,api:ApiCommand):Promise<any>
+    updateTrackerHeader(result:boolean,taskName?:string):Promise<boolean>
+    updateTrackerDetails(result:boolean,api:ApiCommand,taskName?:string):Promise<any>
 
-    handleWhenStartTransaction(TotalTransactionCount:number):void;
-    handleWhenCompletedCommand(CompletedTransactionCount:number,TotalTransactionCount:number):void;
-    handleWhenFailedCommand(CompletedTransactionCount:number,TotalTransactionCount:number):void;    
-    handleWhenCompletedTransation(TotalTransactionCount:number):void;
-    handleWhenFailedTransation(TotalTransactionCount:number):void;
+    handleWhenStartTransaction(TotalTransactionCount:number,taskName?:string):void;
+    handleWhenCompletedCommand(CompletedTransactionCount:number,TotalTransactionCount:number,taskName?:string):void;
+    handleWhenFailedCommand(CompletedTransactionCount:number,TotalTransactionCount:number,taskName?:string):void;    
+    handleWhenCompletedTransation(TotalTransactionCount:number,taskName?:string):void;
+    handleWhenFailedTransation(TotalTransactionCount:number,taskName?:string):void;
 
 }
