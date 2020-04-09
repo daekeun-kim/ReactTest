@@ -7,7 +7,7 @@ export abstract class AbsSPTransaction implements ISPTransactionCommand {
 
     protected Id:number;
     public Title:string
-    protected Author:Person;
+    public Author:Person;
 
     protected _isPagedLoad:boolean;
     protected _PagedCount:number;
