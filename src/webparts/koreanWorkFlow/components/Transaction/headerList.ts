@@ -7,6 +7,8 @@ import { LookUp } from "../../../Common/SPOType/LookUp";
 type Choice2 = "Test1"|"Test2"|"Test3"|"";
 
 export class headerList extends AbsSPTransaction {
+  
+
 
 
   headerID:string;
@@ -21,9 +23,10 @@ export class headerList extends AbsSPTransaction {
   group:Person[];
   Number:number;
   YesOrNo:boolean;
+
+  employee:string;
    
   constructor() {
-
 
     super();   
        this.headerID = ""
@@ -40,6 +43,7 @@ export class headerList extends AbsSPTransaction {
       ,this.YesOrNo = null;
 
   }
+
 
   getMultiChoiceMemeberFields(): string[] {
     return ["Choice1"];
@@ -71,10 +75,11 @@ getPersonMemeberFields(): string[] {
     return ["requestor"];
 }
 getVirtualMemeberFields(): string[] {
-    return [];
+    return ["employee"];
 }
 getFormID(){
     return this.headerID;
 }
+
 
 }

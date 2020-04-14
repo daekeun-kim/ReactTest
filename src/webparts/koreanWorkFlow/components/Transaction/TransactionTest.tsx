@@ -207,7 +207,7 @@ export class TransactionTest extends React.Component<any,any> implements ITransa
 
         let rstheaderList:headerList[] = await apiTransaction.LoadAll(headerList,"headerID eq 'dsd'");
 
-        rstheaderList[0].status ="ddddd";
+        rstheaderList[0].status ="Approved";
         rstheaderList[0].Choice1 = ["Test1","Test3"];
 //        rstheaderList[0].group = [];
   //      rstheaderList[0].lookup1 = null;
@@ -217,7 +217,7 @@ export class TransactionTest extends React.Component<any,any> implements ITransa
 
 
 
-        apiTransaction.CommandForAdd(rstheaderList[0]);
+        apiTransaction.CommandForUpdate(rstheaderList[0]);
         apiTransaction.ExecuteCommand();
         
 
@@ -349,7 +349,7 @@ yrd
                             onChange={this.handleChange} />   
 
 
-            <Dialog
+        <Dialog
             hidden={!this.state.isProcessing}                                                        
             modalProps={{                
                 isBlocking: true,                            
@@ -364,7 +364,7 @@ yrd
                 {this.state.taskName}: {Math.round(this.state.progress * 100) }% completed 
               <ProgressIndicator label="" description="" percentComplete={this.state.progress} />
             </div>
-            </Dialog>
+        </Dialog>
 
         </div>
         );

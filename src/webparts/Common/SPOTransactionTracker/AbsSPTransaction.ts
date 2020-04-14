@@ -269,6 +269,20 @@ export abstract class AbsSPTransaction implements ISPTransactionCommand {
                 targetobj = JSON.parse(tempJson);
 
             }
+            else if (typeof targetValue == "number"){
+
+                let tempJson = "";
+
+                if ( targetValue == null){
+                    tempJson = `{"${props.toString()}":null}`
+                }
+                else{                              
+                    tempJson = `{"${props.toString()}":"${targetValue}"}`;                                       
+                }
+
+                targetobj = JSON.parse(tempJson);
+            
+            }
             else{
 
                 let tempJson = "";
@@ -277,7 +291,10 @@ export abstract class AbsSPTransaction implements ISPTransactionCommand {
                     tempJson = `{"${props.toString()}":null}`
                 }
                 else{
-                    tempJson = `{"${props.toString()}":"${targetValue}"}`
+
+                    let tempTargetValue = JSON.stringify(targetValue);                    
+                    tempJson = `{"${props.toString()}":${tempTargetValue}}`;                    
+                   
                 }
                 console.log(tempJson);
                 targetobj = JSON.parse(tempJson);
@@ -350,10 +367,11 @@ export abstract class AbsSPTransaction implements ISPTransactionCommand {
                 
                 rstFields.push(`${props.toString()}/Id`);
                 rstFields.push(`${props.toString()}/Title`);
-                rstFields.push(`${props.toString()}/EMail`);
+/*                 rstFields.push(`${props.toString()}/EMail`);
                 rstFields.push(`${props.toString()}/Department`);
                 rstFields.push(`${props.toString()}/Office`);
-                rstFields.push(`${props.toString()}/WorkPhone`);
+                rstFields.push(`${props.toString()}/WorkPhone`); */
+                // if email account is empty it will have error
                 
             } 
             else{
