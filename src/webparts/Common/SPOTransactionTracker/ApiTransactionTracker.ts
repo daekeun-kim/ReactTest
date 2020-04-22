@@ -458,7 +458,7 @@ export class ApiTransactionTracker {
             })
             .catch(async error=>{ 
                  target.errorWhenUpdate(error);       
-                 this._spTrackerTacker.handleWhenCompletedCommand(this._completedSpoWebserviceCount,this._totalSpoWebserviceCount,taskName);            
+                 this._spTrackerTacker.handleWhenFailedCommand(this._completedSpoWebserviceCount,this._totalSpoWebserviceCount,taskName);            
                  return error;
             }); 
         }

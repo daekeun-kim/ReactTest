@@ -13,6 +13,7 @@ export abstract class AbsISPTRansactionTracker implements ISPTransactionTrackerH
     protected _hasProgressIndicator:boolean;
     protected _completedSpoWebServiceCount:number;
     protected _totalSpoWebServiceCount:number;
+    protected _FormID:string
     
 
     constructor(any){
@@ -22,6 +23,7 @@ export abstract class AbsISPTRansactionTracker implements ISPTransactionTrackerH
         this._hasProgressIndicator = false;
         this._completedSpoWebServiceCount = 0;
         this._totalSpoWebServiceCount = 0;
+        this._FormID = "";
     }
 
     abstract getTrackerSharePointSite(): string;
@@ -29,6 +31,10 @@ export abstract class AbsISPTRansactionTracker implements ISPTransactionTrackerH
     abstract getTransactionName(): string ;
     abstract getSendToUserEmailWhenFail():string;
     abstract getSendToAdminEmailWhenFail():string;
+
+    setFormID(iFromId:string){        
+        this._FormID = iFromId;
+    }
  
     setProgressIndicator(iProgressIndicator:ITransactionProgressIndicator){
 
@@ -83,7 +89,6 @@ export abstract class AbsISPTRansactionTracker implements ISPTransactionTrackerH
 
     }
 
-
     setTrackerHeaderListItemId(iListItemNumber:number){
 
         this._trackerHeaderListItemId = iListItemNumber;
@@ -118,14 +123,15 @@ export abstract class AbsISPTRansactionTracker implements ISPTransactionTrackerH
         let web = new Web(trackerSite);
 
         return web.lists.getByTitle(listName).items.add({
-            Title:"test"
+            Title:this.getTransactionName() + "_" + this._FormID
             ,TransactionID:this.getTrackerHeaderId()
             ,SharePointSite:this.getTargetSharepointSite()
             ,ApplicationName:this.getApplicationName()
             ,TransactionName:this.getTransactionName()
             ,SendToAdminEmailWhenFail:this.getSendToAdminEmailWhenFail()
             ,SendToUserEmailWhenFail:this.getSendToUserEmailWhenFail()
-            ,Result:"wait"
+            ,FormID:this._FormID
+            ,Result:"R"
         }).then((result:ItemAddResult)=>{
             console.log("createTrackerHeader -- end");
             this._completedSpoWebServiceCount++
@@ -146,7 +152,7 @@ export abstract class AbsISPTRansactionTracker implements ISPTransactionTrackerH
         let web = new Web(trackerSite);
 
         return web.lists.getByTitle(listName).items.add({
-            Title:"test"
+            Title:this._FormID != "" ? this.getTransactionName() + "_" + this._FormID : this.getTransactionName()
             ,HeaderID:this.getTrackerHeaderId()
             ,CommandID:api.getCommandId()
             ,Seq:api.getSeq()
@@ -158,7 +164,7 @@ export abstract class AbsISPTRansactionTracker implements ISPTransactionTrackerH
             ,UndoValue:api.getTargetObj().getUndoValue()
             ,RedoValue:api.getTargetObj().getRedoValue()
             ,ListItemID:api.getTargetObj().getId()
-            ,Result:"wait"
+            ,Result:"R"
 
         }).then((result:ItemAddResult)=>{
             this._completedSpoWebServiceCount++
@@ -177,13 +183,14 @@ export abstract class AbsISPTRansactionTracker implements ISPTransactionTrackerH
         let trackerSite = this.getTrackerSharePointSite();
         let listName = this.getTrackerHeaderListName();
         let trackerHeaderId = this._trackerHeaderListItemId;
-        let sResult = result === true? "success" : "failed";
+        let sResult = result === true? "S" : "F";
 
         let web = new Web(trackerSite);
 
 
         return web.lists.getByTitle(listName).items.getById(trackerHeaderId).update({
             Result:sResult
+            ,FormID:this._FormID
         }).then(res=>{
 
             console.log("updateTrackerHeader -- end");
@@ -201,11 +208,12 @@ export abstract class AbsISPTRansactionTracker implements ISPTransactionTrackerH
         console.log("updateTrackerDetails -- start");
         let trackerSite = this.getTrackerSharePointSite();
         let listName = this.getTrackerDetailListName();
-        let sResult = result === true? "success" : "failed";
+        let sResult = result === true? "S" : "F";
         let web = new Web(trackerSite);
         let trackerDetailId = api.getTrackerDetailId();
         return web.lists.getByTitle(listName).items.getById(trackerDetailId).update({
             Result:sResult
+            ,ListItemID:api.getTargetObj().getId()
         }).then(res=>{
             console.log("updateTrackerDetails -- end");
             return true;

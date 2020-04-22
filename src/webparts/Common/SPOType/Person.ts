@@ -30,7 +30,12 @@ export class Person {
 
             if ( data[props] != null){
                 this[props] = data[props];
-            }                                          
+            } 
+            
+            if ( data.Email != null && data.Email != ""){
+                this.EMail = data.Email;
+            }
+            
         }    
 
     }
