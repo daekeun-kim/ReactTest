@@ -43,6 +43,7 @@ export default interface ISPTransactionCommand {
 
     getUndoValue():string;
     getRedoValue():string;
+    getErrorMessage():string;
 
     setRedoValue(targetObj:any);
 

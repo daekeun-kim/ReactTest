@@ -15,6 +15,7 @@ export abstract class AbsSPTransaction implements ISPTransactionCommand {
     protected _UnDoValues:string
     protected _ReDoValues:string
     protected _Result:boolean;
+    protected _ErrorMessage:string
 
     constructor(){
         this.Id = null;
@@ -22,7 +23,8 @@ export abstract class AbsSPTransaction implements ISPTransactionCommand {
         this.Author = new Person();
         this._isPagedLoad = false;
         this._PagedCount = 100;      
-        this._Result = true;          
+        this._Result = true;      
+        this._ErrorMessage = "";
     }    
 
 
@@ -65,6 +67,10 @@ export abstract class AbsSPTransaction implements ISPTransactionCommand {
         return this._ReDoValues;
     }
 
+    getErrorMessage():string{
+        return this._ErrorMessage;
+    }
+
 
     getTargetSharepointSite(): string {
 
@@ -80,7 +86,7 @@ export abstract class AbsSPTransaction implements ISPTransactionCommand {
 
     protected getOutofTargetMemberFields():string[]{
 
-        let rst =["_UnDoValues","_ReDoValues","_isPagedLoad","_PagedCount","_Result","Id","Author"];
+        let rst =["_ErrorMessage","_UnDoValues","_ReDoValues","_isPagedLoad","_PagedCount","_Result","Id","Author"];
         return rst;
     }
 
@@ -652,12 +658,14 @@ export abstract class AbsSPTransaction implements ISPTransactionCommand {
     errorWhenAdd(error:any){
 
         this._Result = false;
+        this._ErrorMessage = JSON.stringify(error);
         return;
     }
 
     errorWhenUpdate(error:any){
 
         this._Result = false;
+        this._ErrorMessage = JSON.stringify(error);
         return;
     }
 
@@ -665,6 +673,7 @@ export abstract class AbsSPTransaction implements ISPTransactionCommand {
     errorWhenDelete(error:any){
 
         this._Result = false;
+        this._ErrorMessage = JSON.stringify(error);
         return; 
     }
 

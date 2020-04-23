@@ -216,7 +216,7 @@ export class TransactionTest extends React.Component<any,any> implements ITransa
 
 
 
-        apiTransaction.CommandForDelete(rstheaderList[0]);
+        apiTransaction.CommandForUpdate(rstheaderList[0]);
         apiTransaction.ExecuteCommand();
         
 

@@ -222,17 +222,44 @@ export abstract class AbsISPTRansactionTracker implements ISPTransactionTrackerH
         let sResult = result === true? "S" : "F";
         let web = new Web(trackerSite);
         let trackerDetailId = api.getTrackerDetailId();
-        return web.lists.getByTitle(listName).items.getById(trackerDetailId).update({
-            Result:sResult
-            ,ListItemID:api.getTargetObj().getId()
-        }).then(res=>{
-            console.log("updateTrackerDetails -- end");
-            return true;
 
-        }).catch(error=>{
+        if ( result === true){
 
-            return false;
-        });
+            return web.lists.getByTitle(listName).items.getById(trackerDetailId).update({
+                Result:sResult
+                ,ListItemID:api.getTargetObj().getId()
+            }).then(res=>{
+                console.log("updateTrackerDetails -- end");
+                return true;
+    
+            }).catch(error=>{
+    
+                return false;
+            });
+
+        }else{
+
+            return web.lists.getByTitle(listName).items.getById(trackerDetailId).update({
+                Result:sResult
+                ,ListItemID:api.getTargetObj().getId()
+                ,ErrorMessage:api.getTargetObj().getErrorMessage()
+            }).then(res=>{
+                console.log("updateTrackerDetails -- end with error");
+                return true;
+    
+            }).catch(error=>{
+    
+                return false;
+            });
+
+
+        }
+
+
+
+
+
+
     }
 
 }
