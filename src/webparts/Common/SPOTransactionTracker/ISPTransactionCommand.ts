@@ -20,6 +20,7 @@ export default interface ISPTransactionCommand {
     getTargetObjForUpdate():any;
 
     
+    getPrimaryMemeberFields():string[];
     getDateMemeberFields():string[];
     getCalculatedMemeberFields():string[];
     getPersonMemeberFields():string[];
@@ -28,6 +29,8 @@ export default interface ISPTransactionCommand {
     getMultiLookupMemeberFields():string[];
     getMultiChoiceMemeberFields():string[];
     getVirtualMemeberFields():string[];
+
+    getFilterForPrimary():string;
 
     LoadQuery(filterString?:string):any;    
     beforeLoad():boolean;

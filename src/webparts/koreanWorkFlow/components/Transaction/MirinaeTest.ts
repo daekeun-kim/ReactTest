@@ -3,6 +3,10 @@ import pnp  from "sp-pnp-js";
 import { AbsISPTRansactionTracker } from "../../../Common/SPOTransactionTracker/AbsISPTransactionTracker";
 
 export class MirinaeTest extends AbsISPTRansactionTracker {
+    
+    getTimeOutMinutes(): number {
+        return 10;        
+    }
 
 
     getTrackerSharePointSite(): string {

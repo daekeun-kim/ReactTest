@@ -3,6 +3,7 @@ import { AbsSPTransaction } from "../../../Common/SPOTransactionTracker/AbsSPTra
 import { Person } from "../../../Common/SPOType/Person";
 
 export class StockAdjRequestsTasks extends AbsSPTransaction {
+
   getMultiChoiceMemeberFields(): string[] {
     return [];
   }
@@ -74,6 +75,11 @@ export class StockAdjRequestsTasks extends AbsSPTransaction {
       , this.PostRejectedEmail = ""
 
   }
+
+  getPrimaryMemeberFields(): string[] {
+    return ["FormID","ApproverControl","Assigned_x0020_To"];
+  }
+
 
   getListName(): string {
 

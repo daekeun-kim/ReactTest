@@ -7,6 +7,7 @@ export class detailList extends AbsSPTransaction {
 
 
 
+
   Requestor: Person;
   RequestDate:Date
   headerID:string;
@@ -27,6 +28,10 @@ export class detailList extends AbsSPTransaction {
 
     return "RequestDetail";
 
+  }
+
+  getPrimaryMemeberFields(): string[] {
+    return [];
   }
   getCalculatedMemeberFields(): string[] {
     return [];

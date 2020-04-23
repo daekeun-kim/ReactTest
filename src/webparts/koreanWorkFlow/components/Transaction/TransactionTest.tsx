@@ -190,11 +190,9 @@ export class TransactionTest extends React.Component<any,any> implements ITransa
                 apiTransaction.CommandForAdd(header2);
             }
 
-            apiTransaction.ExecuteCommand("LastTask");
+            apiTransaction.ExecuteCommand("LastTask");  
 
         }
-
-
 
     }
 
@@ -206,6 +204,7 @@ export class TransactionTest extends React.Component<any,any> implements ITransa
         let apiTransaction = new ApiTransactionTracker(ApplicationInfo);
 
         let rstheaderList:headerList[] = await apiTransaction.LoadAll(headerList,"headerID eq 'dsd'");
+        //let rstheaderList:headerList[] = await apiTransaction.LoadAll(headerList,"Title eq 'mirinaeTest25'");
 
         rstheaderList[0].status ="Approved";
         rstheaderList[0].Choice1 = ["Test1","Test3"];
@@ -217,7 +216,7 @@ export class TransactionTest extends React.Component<any,any> implements ITransa
 
 
 
-        apiTransaction.CommandForUpdate(rstheaderList[0]);
+        apiTransaction.CommandForDelete(rstheaderList[0]);
         apiTransaction.ExecuteCommand();
         
 

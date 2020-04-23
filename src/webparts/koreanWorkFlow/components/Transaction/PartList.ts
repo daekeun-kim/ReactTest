@@ -4,6 +4,7 @@ import { Person } from "../../../Common/SPOType/Person";
 
 export class PartList extends AbsSPTransaction {
 
+
   Title: string;
   Part_x0020_No:string;
   DR_x0020_QTY:number;
@@ -16,6 +17,10 @@ export class PartList extends AbsSPTransaction {
     this.Title = ""      
       , this.Part_x0020_No = ""
       , this.DR_x0020_QTY = 0
+  }
+
+  getPrimaryMemeberFields(): string[] {
+    return ["Title","Part_x0020_No"];
   }
 
   getMultiChoiceMemeberFields(): string[] {

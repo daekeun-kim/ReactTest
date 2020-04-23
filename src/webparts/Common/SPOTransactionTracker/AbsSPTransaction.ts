@@ -25,6 +25,8 @@ export abstract class AbsSPTransaction implements ISPTransactionCommand {
         this._Result = true;          
     }    
 
+
+    abstract getPrimaryMemeberFields(): string[]
     abstract getCalculatedMemeberFields(): string[]
     abstract getMultiChoiceMemeberFields(): string[]
     abstract getLookupMemeberFields(): string[];
@@ -96,6 +98,7 @@ export abstract class AbsSPTransaction implements ISPTransactionCommand {
 
         return JSON.stringify(tempObj);        
     }
+
 
     protected getTargetSPOValue(){
 
@@ -309,8 +312,216 @@ export abstract class AbsSPTransaction implements ISPTransactionCommand {
 
 
         return rstObj;
-
     }
+
+
+    getFilterForPrimary():string{
+
+        let memeberPrimaryMember  = this.getPrimaryMemeberFields();
+
+        let memberValInDate = this.getDateMemeberFields();
+        let memberValInPerson = this.getPersonMemeberFields();
+        let memberValInGroup = this.getGroupMemeberFields();
+
+        let memeberValMulitiLookup  = this.getMultiLookupMemeberFields();
+        let memeberValLookupMemeber  = this.getLookupMemeberFields();
+        let memeberValMultiChoice  = this.getMultiChoiceMemeberFields();
+
+        let filterString = "";
+        let result = true;
+
+        for (let index = 0; index < memeberPrimaryMember.length; index++) {
+            
+            const element = memeberPrimaryMember[index];
+            let targetValue = this[element] as any;
+
+            if (memberValInPerson.filter(p=>p === element).length > 0){
+                
+                if (targetValue == null){
+                    result = false;
+                    break;                
+                }
+                else if (targetValue.Id == null){
+                    result = false;
+                    break;   
+                }
+                else{
+                    filterString += ` ${element}Id eq ${targetValue.Id}  and `
+                }                
+                
+            }
+            else if (memberValInGroup.filter(p=>p === element).length > 0){
+
+                let temp ="";
+
+                if ( targetValue.length > 0){                    
+
+                    for (let index = 0; index < targetValue.length; index++) {
+                        const elementValue = targetValue[index];
+
+                        if (elementValue == null){
+                            
+                            result = false;
+                            break; 
+                            
+                        }
+                        else if (elementValue.Id == null){
+                            result = false;
+                            break;   
+                        }
+                        else{
+                            temp += ` ${element}Id eq ${elementValue.Id} or  `
+                        }                         
+                    }     
+                    
+                }
+
+                if (temp.length > 5){
+                    temp=temp.substring(0,temp.length-5)
+                    filterString += "( " + temp + ")  and "
+                }
+
+            } 
+            else if (memeberValLookupMemeber.filter(p=>p === element).length > 0){
+                
+                if (targetValue == null){
+                    result = false;
+                    break;   
+                }
+                else if (targetValue.Id == null){
+                    result = false;
+                    break;   
+                }
+                else{
+                    filterString += ` ${element}Id eq ${targetValue.Id} and `
+                }                
+            }
+            else if (memeberValMulitiLookup.filter(p=>p === element).length > 0){
+
+                let temp ="";
+
+                if ( targetValue.length > 0){                    
+
+                    for (let index = 0; index < targetValue.length; index++) {
+                        const elementValue = targetValue[index];
+
+                        if (elementValue == null){
+                            result = false;
+                            break;   
+                            
+                        }
+                        else if (elementValue.Id == null){
+                            result = false;
+                            break;   
+                            
+                        }
+                        else{
+                            temp += ` ${element}Id eq ${elementValue.Id}  or  `
+                        }                         
+                    }     
+                    
+                }
+
+                if (temp.length > 5){
+                    temp=temp.substring(0,temp.length-5)
+                    filterString += "( " + temp + ")  and "
+                }
+
+            } 
+            else if (memeberValMultiChoice.filter(p=>p === element).length > 0){
+
+                let temp ="";
+                
+                if ( targetValue.length > 0){                    
+
+                    for (let index = 0; index < targetValue.length; index++) {
+                        const elementValue = targetValue[index];
+
+                        if (elementValue == null){
+                            result = false;
+                            break;   
+                            
+                        }
+                        else{
+                            temp += ` ${element} eq '${encodeURIComponent(elementValue)}'  or  `
+                        }                         
+                    }     
+                    
+                }
+
+                if (temp.length > 5){
+                    temp=temp.substring(0,temp.length-5)
+                    filterString += "( " + temp + ")  and "
+                }
+
+            } 
+            else if (memberValInDate.filter(p=>p === element).length > 0){
+
+                if ( targetValue == null){
+                    result = false;
+                    break;   
+
+                }
+                else{
+                    filterString += ` ${element} eq '${targetValue.toISOString()}'  and `
+                }               
+
+            }  
+            else if (typeof targetValue == "boolean"){
+
+                if ( targetValue == null){
+
+                    result = false;
+                    break;   
+
+                }
+                else{
+                    filterString += ` ${element} eq ${targetValue === true?1:0}  and `
+                }
+
+            }
+            else if (typeof targetValue == "number"){
+
+                if ( targetValue == null){
+
+                    result = false;
+                    break;   
+
+                }
+                else{          
+                    filterString += ` ${element} eq ${targetValue}  and `                    
+                                    
+                }
+            
+            }
+            else{
+
+                if ( targetValue == null){
+
+                    result = false;
+                    break;   
+                }
+                else{
+                    filterString += ` ${element} eq '${encodeURIComponent(targetValue)}'  and `             
+                }
+            }    
+            
+        }
+
+
+        if (filterString.length > 5){
+            filterString=filterString.substring(0,filterString.length-5)
+        }
+
+        if (result === false){
+
+            return "";
+        }
+        
+
+        return filterString;
+    }
+
 
     protected getAllFields(){
         
@@ -395,6 +606,7 @@ export abstract class AbsSPTransaction implements ISPTransactionCommand {
         });
 
     }
+    
 
     setRedoValue(targetObj: any): void {
         this._ReDoValues = this.getTargetObjForFlow(targetObj);        

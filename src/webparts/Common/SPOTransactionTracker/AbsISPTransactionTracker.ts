@@ -25,7 +25,7 @@ export abstract class AbsISPTRansactionTracker implements ISPTransactionTrackerH
         this._totalSpoWebServiceCount = 0;
         this._FormID = "";
     }
-
+    abstract getTimeOutMinutes(): number;
     abstract getTrackerSharePointSite(): string;
     abstract getApplicationName(): string;
     abstract getTransactionName(): string ;
@@ -113,6 +113,15 @@ export abstract class AbsISPTRansactionTracker implements ISPTransactionTrackerH
     getTrackerHeaderId(): string {
         return this._trackerHeaderId;
     }
+
+    private getTimeOutDate(): Date {
+        
+        let timeOutTime = new Date();
+        let minutes = this.getTimeOutMinutes();
+        let timeout = new Date(timeOutTime.getTime() + minutes*60000);
+
+        return timeout;
+    }
     createTrackerHeader(taskName?:string): Promise<any> {
 
 
@@ -123,14 +132,15 @@ export abstract class AbsISPTRansactionTracker implements ISPTransactionTrackerH
         let web = new Web(trackerSite);
 
         return web.lists.getByTitle(listName).items.add({
-            Title:this.getTransactionName() + "_" + this._FormID
+            Title:this._FormID != "" ?this.getApplicationName()+ "_" + this.getTransactionName() + "_" + this._FormID : this.getApplicationName() + "_" + this.getTransactionName()
             ,TransactionID:this.getTrackerHeaderId()
             ,SharePointSite:this.getTargetSharepointSite()
             ,ApplicationName:this.getApplicationName()
             ,TransactionName:this.getTransactionName()
             ,SendToAdminEmailWhenFail:this.getSendToAdminEmailWhenFail()
-            ,SendToUserEmailWhenFail:this.getSendToUserEmailWhenFail()
+            ,SendToUserEmailWhenFail:this.getSendToUserEmailWhenFail()            
             ,FormID:this._FormID
+            ,TimeOutDate:this.getTimeOutDate()
             ,Result:"R"
         }).then((result:ItemAddResult)=>{
             console.log("createTrackerHeader -- end");
@@ -152,7 +162,7 @@ export abstract class AbsISPTRansactionTracker implements ISPTransactionTrackerH
         let web = new Web(trackerSite);
 
         return web.lists.getByTitle(listName).items.add({
-            Title:this._FormID != "" ? this.getTransactionName() + "_" + this._FormID : this.getTransactionName()
+            Title:this._FormID != "" ?this.getApplicationName()+ "_" + this.getTransactionName() + "_" + this._FormID : this.getApplicationName() + "_" + this.getTransactionName()
             ,HeaderID:this.getTrackerHeaderId()
             ,CommandID:api.getCommandId()
             ,Seq:api.getSeq()
@@ -161,9 +171,10 @@ export abstract class AbsISPTRansactionTracker implements ISPTransactionTrackerH
             ,CommandType:api.getCommandType()
             ,UndoType:api.getUndoType()
             ,RedoType:api.getRedoType()
-            ,UndoValue:api.getTargetObj().getUndoValue()
+            ,UndoValue:api.getCommandType() === "add" ? "": api.getTargetObj().getUndoValue()
             ,RedoValue:api.getTargetObj().getRedoValue()
             ,ListItemID:api.getTargetObj().getId()
+            ,PrimaryFilter: api.getTargetObj().getFilterForPrimary()
             ,Result:"R"
 
         }).then((result:ItemAddResult)=>{

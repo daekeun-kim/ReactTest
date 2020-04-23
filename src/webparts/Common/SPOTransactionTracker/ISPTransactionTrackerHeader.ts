@@ -13,6 +13,8 @@ export default interface ISPTransactionTrackerHeader {
     getTrackerHeaderId():string
     setTrackerHeaderListItemId(iListItemNumber:number):void
     setTotalSpoWebServiceCount(iTotalSpoWebServiceCount:number):void
+
+    getTimeOutMinutes():number;
     
     createTrackerHeader(taskName?:string):Promise<any>
     createTrackerDetails(api:ApiCommand,taskName?:string):Promise<any>

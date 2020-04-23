@@ -7,6 +7,7 @@ import { LookUp } from "../../../Common/SPOType/LookUp";
 type Choice2 = "Test1"|"Test2"|"Test3"|"";
 
 export class headerList extends AbsSPTransaction {
+
   
 
 
@@ -44,7 +45,9 @@ export class headerList extends AbsSPTransaction {
 
   }
 
-
+  getPrimaryMemeberFields(): string[] {
+      return ["formID","Choice1","lookup2","lookup1","group","YesOrNo"];
+  }
   getMultiChoiceMemeberFields(): string[] {
     return ["Choice1"];
   }

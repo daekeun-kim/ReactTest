@@ -24,6 +24,9 @@ export class TaskList extends AbsSPTransaction {
       , this.Assigned_x0020_To = new Person()            
       
   }
+  getPrimaryMemeberFields(): string[] {
+    return ["FormID","ApproverControl","Assigned_x0020_To"];
+  }
   getMultiChoiceMemeberFields(): string[] {
     return [];
   }
