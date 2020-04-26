@@ -14,7 +14,9 @@ export abstract class AbsISPTRansactionTracker implements ISPTransactionTrackerH
     protected _completedSpoWebServiceCount:number;
     protected _totalSpoWebServiceCount:number;
     protected _FormID:string
-    
+
+    protected _sleepSec:number;
+    protected _estimatedFlowRunningMinute:number;
 
     constructor(any){
 
@@ -24,7 +26,11 @@ export abstract class AbsISPTRansactionTracker implements ISPTransactionTrackerH
         this._completedSpoWebServiceCount = 0;
         this._totalSpoWebServiceCount = 0;
         this._FormID = "";
+        this._sleepSec = 5000;
+        this._estimatedFlowRunningMinute = 3;
     }
+
+
     abstract getTimeOutMinutes(): number;
     abstract getTrackerSharePointSite(): string;
     abstract getApplicationName(): string;
@@ -104,6 +110,10 @@ export abstract class AbsISPTRansactionTracker implements ISPTransactionTrackerH
         
     }
 
+    checkifOtherTransactionMessage(): string {
+        return "Checking other transaction"
+    }
+
     getTrackerHeaderListName(): string {
         return "TransactionTrackerHeader"
     }
@@ -122,6 +132,129 @@ export abstract class AbsISPTRansactionTracker implements ISPTransactionTrackerH
 
         return timeout;
     }
+
+    private getTimeOutDateforCheck(): Date {
+        
+        let timeOutTime = new Date();
+        let minutes = this.getTimeOutMinutes();
+        let timeout = new Date(timeOutTime.getTime() - (minutes*60000 + 60000 * this._estimatedFlowRunningMinute) );
+
+        return timeout;
+    }
+
+    async checkifOtherTransactionWorking():Promise<boolean>{
+        
+        debugger;
+        let trackerSite = this.getTrackerSharePointSite();
+        let listName = this.getTrackerHeaderListName();
+        let web = new Web(trackerSite);
+        let result = false;
+
+        let ApplicationName = this.getApplicationName();
+        if (this._FormID == ""){
+
+            return true;
+        }
+
+        if (ApplicationName == "" || ApplicationName == null){
+
+            return true;
+        }
+
+        let checkSleepSec  = 0;
+        let checkFailed = "";
+
+        while(1){
+
+            if (checkSleepSec > this.getTimeOutMinutes() * 60000 ){
+                checkFailed = "T";
+                break;
+            }
+            let checkTimeOutDate = this.getTimeOutDateforCheck().toISOString();
+
+            let filter = `Created ge datetime'${checkTimeOutDate}' 
+            and FormID  eq '${this._FormID}' 
+            and ApplicationName eq '${ApplicationName}' 
+            and ( Result eq 'R' or Result eq 'F') `
+
+/*             let filter = 
+            `FormID  eq '${this._FormID}' 
+            and ApplicationName eq '${ApplicationName}' 
+            and ( Result eq 'R' or Result eq 'F') ` */
+            
+            let checkResult = await web.lists.getByTitle(listName).items.filter(filter)
+            .select('Result','RedoFlag','RollbackFlag')
+            .get()
+            .then(res=>{                
+                if ( res.length > 0){              
+
+                    let flagResult = true;
+
+                    for (let index = 0; index < res.length; index++) {
+                        const element = res[index];
+                        if (element.Result === 'F'){
+
+                            if (element.RedoFlag != null && element.RedoFlag != ""){
+                                continue;
+                            }
+
+                            if (element.RollbackFlag != null && element.RollbackFlag != ""){
+                                continue;                                
+                            }
+
+                            checkFailed = "T";
+                            flagResult = false;
+                            
+                            return true;
+                        
+                        }else if (element.Result === 'R'){
+                            
+                            if (element.RedoFlag != null && element.RedoFlag != ""){
+                                continue;
+                            }
+
+                            if (element.RollbackFlag != null && element.RollbackFlag != ""){
+                                continue;                                
+                            }
+
+                            flagResult = false;
+                            break;
+                            
+                        }                        
+                    }
+
+                    return flagResult
+
+                }else{
+
+                    return true;
+                }
+            });
+
+            if ( checkResult === true){
+                break;
+            }
+
+            await this.sleep(this._sleepSec);
+            checkSleepSec = checkSleepSec + this._sleepSec;
+
+        }
+
+        if ( checkFailed == "T"){
+            result = false;
+        }else{
+            result = true;
+        }
+        
+        return result;
+    }
+
+    
+    sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+
     createTrackerHeader(taskName?:string): Promise<any> {
 
 

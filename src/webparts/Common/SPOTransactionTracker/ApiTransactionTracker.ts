@@ -19,6 +19,7 @@ export class ApiTransactionTracker {
     private _partialExecuteCount :number;
     private _isOpen:boolean
     private _currentTaskName:string;
+    private _checkTransactionMessage:string;
 
 
     constructor(spTransactionTracker:ISPTransactionTrackerHeader){
@@ -33,6 +34,7 @@ export class ApiTransactionTracker {
         this._transactionID = spTransactionTracker.getTrackerHeaderId();        
         this._partialExecuteCount = 0;
         this._currentTaskName = "";
+        this._checkTransactionMessage = spTransactionTracker.checkifOtherTransactionMessage()
     }
 
     private async OpenConnection(){
@@ -43,6 +45,13 @@ export class ApiTransactionTracker {
         let apiList = []
 
         if (this._isOpen === false){
+
+            this._spTrackerTacker.handleWhenStartTransaction(this._totalSpoWebserviceCount,this._checkTransactionMessage);
+            let result = await this._spTrackerTacker.checkifOtherTransactionWorking();
+
+            if (result == false){
+                return false;
+            }
 
             createHeader = this._spTrackerTacker.createTrackerHeader(this._currentTaskName);
             apiList.push(

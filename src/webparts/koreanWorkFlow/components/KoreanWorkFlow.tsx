@@ -17,6 +17,7 @@ import { Panel, PanelType } from 'office-ui-fabric-react/lib/Panel';
 import { useConstCallback } from '@uifabric/react-hooks';
 import {TestGrid} from './Grid/TestGrid'
 import {TransactionTest} from './Transaction/TransactionTest'
+import {TransactionTestPage} from './Transaction/TransactionTestPage'
 
 import {
   BrowserRouter as Router,
@@ -407,6 +408,13 @@ export default class KoreanWorkFlow extends React.Component<IKoreanWorkFlowProps
                   onClick:(e)=>this.moveTothePage(e,props,'Transaction')
                 }
                 ,
+                {        
+                  name: 'TransactionDemo',
+                  url: '/TransactionDemo',
+                  key: 'key32',
+                  onClick:(e)=>this.moveTothePage(e,props,'TransactionDemo')
+                }
+                ,
                 {
                   name: 'GRID',
                   url: 'http://example.com',
@@ -496,7 +504,14 @@ export default class KoreanWorkFlow extends React.Component<IKoreanWorkFlowProps
                         <TransactionTest {...props} {...this.props }  />                             
                       </div>
                     </div>}
-                  />                       
+                  /> 
+                  <Route exact path="/TransactionDemo"  component={(props)=>  
+                    <div className="main-content">
+                      <div className="content">
+                        <TransactionTestPage {...props} {...this.props }  />                             
+                      </div>
+                    </div>}
+                  />                                       
                 </Switch>     
               </div>
             </div>

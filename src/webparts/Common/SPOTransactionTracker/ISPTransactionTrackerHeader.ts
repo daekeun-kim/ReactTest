@@ -2,6 +2,9 @@ import { ApiCommand } from "./ApiTransactionTracker";
 
 export default interface ISPTransactionTrackerHeader {
 
+    checkifOtherTransactionWorking():Promise<boolean>;
+    checkifOtherTransactionMessage():string;
+
     getTrackerSharePointSite():string
     getTargetSharepointSite():string;
     getApplicationName():string
