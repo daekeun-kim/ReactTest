@@ -10,9 +10,13 @@ import ITransactionProgressIndicator from '../../../Common/SPOTransactionTracker
 import { ProgressIndicator, Spinner, Dialog, SpinnerSize } from 'office-ui-fabric-react';
 import { detailList } from './detailList';
 import { TransactionInfo } from './TransactionInfo';
+import ModuleLoader from '@microsoft/sp-module-loader';
+import * as jQuery from 'jquery';
+require('jqueryui');
+require('jqgride');
+require('jqGrid');
 
-
-
+let $:any = jQuery;
 
 // Details form display the detail information of request. 
 export class TransactionTestPage extends React.Component<any,any> implements ITransactionProgressIndicator{
@@ -29,8 +33,6 @@ export class TransactionTestPage extends React.Component<any,any> implements ITr
         }
     }
 
-
-
     handleChange = (e) => {
         this.setState({
           [e.target.name]: e.target.value
@@ -39,6 +41,60 @@ export class TransactionTestPage extends React.Component<any,any> implements ITr
 
     async componentDidMount(){
 
+            
+            jQuery(document).ready(function() { 
+                $("#list2").jqGrid({
+                            url:'server.php?q=2',
+                         datatype: "json",
+                            colNames:['Inv No','Date', 'Client', 'Amount','Tax','Total','Notes'],
+                            colModel:[
+                                {name:'id',index:'id', width:55},
+                                {name:'invdate',index:'invdate', width:90},
+                                {name:'name',index:'name asc, invdate', width:100},
+                                {name:'amount',index:'amount', width:80, align:"right"},
+                                {name:'tax',index:'tax', width:80, align:"right"},		
+                                {name:'total',index:'total', width:80,align:"right"},		
+                                {name:'note',index:'note', width:150, sortable:false}		
+                            ],
+                            rowNum:10,
+                            rowList:[10,20,30],
+                            pager: '#pager2',
+                            sortname: 'id',
+                         viewrecords: true,
+                         sortorder: "desc",
+                         caption:"JSON Example"
+                     }) as any;
+                     
+                     $("#list2").jqGrid('navGrid','#pager2',{edit:false,add:false,del:false}) as any;
+                    }); 
+            
+
+
+
+  /*       $(".test").click(function() {
+            alert("test");
+        });
+
+        $(".test").hide(); */
+
+/* 
+        ModuleLoader.loadScript('https://code.jquery.com/jquery-1.12.4.min.js',
+            'jQuery'
+        ).then(($: any) => {
+            this.jQuery = $;
+            ModuleLoader.loadScript('http://trirand.com/blog/jqgrid/js/jquery-ui-custom.min.js',
+                'jQuery'
+            ).then(() => {
+                // after all JS files are successfully loaded
+                // ...
+            
+
+            });
+        });
+ */
+
+            
+ 
         //let apiTransaction = new ApiTransactionTracker();
 
         //let result:StockAdjRequestsTasks[] =  await apiTransaction.LoadAll(StockAdjRequestsTasks,"Approval_x0020_Status eq 'Assigned'")
@@ -164,13 +220,64 @@ export class TransactionTestPage extends React.Component<any,any> implements ITr
 
     }
 
+
+    rollBackTransaction =async (e) =>{
+
+
+        let tsInfo = new TransactionInfo("");
+        tsInfo.setProgressIndicator(this);  // if you want to have progress on transaciton
+        let apiTransaction = new ApiTransactionTracker(tsInfo);
+        tsInfo._transationName ="Approve";
+        tsInfo.setFormID("test");
+
+        debugger;
+        let rstheaderList:headerList[] = await apiTransaction.LoadAll(headerList,"Title eq 'HeaderTitle'");
+    
+        for (let index = 0; index < rstheaderList.length; index++) {
+            
+            let element = rstheaderList[index];
+            element.Choice1.push("Test2");
+            apiTransaction.CommandForUpdate(element);
+        }
+
+        await apiTransaction.ExecutePartialCommand("Rollback test- 1"); 
+
+        for (let index = 0; index < rstheaderList.length; index++) {
+            
+            let element = rstheaderList[index];
+            apiTransaction.CommandForDelete(element);
+        }    
+        
+        
+        let success = new headerList();
+        success.Title ="test";
+        success.YesOrNo = false;
+        success.Number = 5
+        success.formID = "test123";
+
+        apiTransaction.CommandForAdd(success);
+
+        let tempError = new headerList();
+        tempError.Title ="test";
+        tempError.YesOrNo = false;
+        tempError.Number = "test" as any;
+
+
+        apiTransaction.CommandForAdd(tempError);
+
+        apiTransaction.ExecuteCommand("Rollback test - 2"); 
+    }
+
    
 
 
     public render(){
         
         console.log("Main render");
-        console.log(this.state);             
+        console.log(this.state);    
+      
+
+
 
         return(            
           <div className="ag-theme-balham">
@@ -194,6 +301,21 @@ export class TransactionTestPage extends React.Component<any,any> implements ITr
 
 <br></br>
 <br></br>
+
+<button onClick={
+                this.rollBackTransaction
+              }> Rollback test </button>
+
+<br></br>
+<br></br>
+
+<button className={'test'} > Rollback test </button>
+
+<br></br>
+<br></br>
+
+<table id="list2"></table>
+<div id="pager2"></div>
 
         <Dialog
             hidden={!this.state.isProcessing}                                                        

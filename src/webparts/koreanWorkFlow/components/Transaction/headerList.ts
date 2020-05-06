@@ -46,7 +46,8 @@ export class headerList extends AbsSPTransaction {
   }
 
   getPrimaryMemeberFields(): string[] {
-      return ["formID","Choice1","lookup2","lookup1","group","YesOrNo"];
+      //return ["formID","Choice1","lookup2","lookup1","group","YesOrNo"];
+      return ["formID"];
   }
   getMultiChoiceMemeberFields(): string[] {
     return ["Choice1"];

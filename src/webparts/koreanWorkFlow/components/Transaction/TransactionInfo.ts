@@ -14,7 +14,13 @@ export class TransactionInfo extends AbsISPTRansactionTracker {
     }
     
     getTimeOutMinutes(): number {
-        return 10;        
+        return 1;        
+    }
+
+    getTargetSharepointSite(): string {
+
+        return "https://klatencor.sharepoint.com/teams/dev_mirinae";      
+        
     }
 
     getTrackerSharePointSite(): string {

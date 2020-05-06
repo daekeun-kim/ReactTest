@@ -27,7 +27,33 @@
       ]
     }
   },
-  "externals": {},
+  "externals": {
+    "jquery": { 
+      "path": "https://code.jquery.com/jquery-1.9.1.js",
+      "globalName": "jQuery"
+    },
+
+    "jqueryui" :{
+      "path": "https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js",
+      "globalName": "jQuery",
+      "globalDependencies": ["jquery"]
+    },
+    "jqgride" :{
+      "path": "https://cdn.jsdelivr.net/npm/jqgrid@4.6.4/js/i18n/grid.locale-en.js",
+      "globalName": "jQuery",
+      "globalDependencies": ["jquery"]
+    },
+    "jqGrid": {
+      "path": "https://cdn.jsdelivr.net/npm/jqgrid@4.6.4/js/jquery.jqGrid.src.js",
+      "globalName": "jQuery",
+      "globalDependencies": ["jquery"]
+    },
+    "simpleWeather": {
+      "path": "https://cdnjs.cloudflare.com/ajax/libs/jquery.simpleWeather/3.1.0/jquery.simpleWeather.min.js",
+      "globalName": "jquery",
+      "globalDependencies": ["jquery"]
+    }
+  },
   "localizedResources": {
     "KoreanWorkFlowWebPartStrings": "lib/webparts/koreanWorkFlow/loc/{locale}.js",
     "SubWebPartWebPartStrings": "lib/webparts/subWebPart/loc/{locale}.js",

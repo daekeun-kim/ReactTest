@@ -236,6 +236,7 @@ export default class KoreanWorkFlow extends React.Component<IKoreanWorkFlowProps
     const {jwtData,jwtToken,errorStr,logginStatus} = this.state;
 
     let datafromServer:any[] = jwtData;
+    
 
     return (
       <div className={ styles.koreanWorkFlow }>

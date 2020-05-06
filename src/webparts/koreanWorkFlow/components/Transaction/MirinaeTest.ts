@@ -13,11 +13,11 @@ export class MirinaeTest extends AbsISPTRansactionTracker {
     }
 
     getTimeOutMinutes(): number {
-        return 10;        
+        return 2;        
     }
 
     getTrackerSharePointSite(): string {
-        return "https://klatencor.sharepoint.com/teams/dev_mirinae"
+        return "https://klatencor.sharepoint.com/teams/dev_transactionmanager"
     }
     getApplicationName(): string {
         return "MirinaeTest"

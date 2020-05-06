@@ -2,6 +2,7 @@ import ISPTransactionCommand from "./ISPTransactionCommand";
 import pnp, { ODataParserBase, AttachmentFileInfo, CamlQuery,Web, ItemAddResult, sp } from "sp-pnp-js";
 import { Person } from "../SPOType/Person";
 import { LookUp } from "../SPOType/LookUp";
+import { Guid } from "@microsoft/sp-core-library";
 
 export abstract class AbsSPTransaction implements ISPTransactionCommand {
 
@@ -520,10 +521,8 @@ export abstract class AbsSPTransaction implements ISPTransactionCommand {
         }
 
         if (result === false){
-
-            return "";
-        }
-        
+            return `Title eq '${Guid.newGuid().toString()}'`;
+        }        
 
         return filterString;
     }
