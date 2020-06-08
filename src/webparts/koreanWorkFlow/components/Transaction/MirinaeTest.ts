@@ -10,6 +10,7 @@ export class MirinaeTest extends AbsISPTRansactionTracker {
     constructor(any){
         super(any);
         this._transationName = "" ;
+        
     }
 
     getTimeOutMinutes(): number {
