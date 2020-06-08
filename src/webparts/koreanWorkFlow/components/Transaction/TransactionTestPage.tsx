@@ -12,6 +12,8 @@ import { detailList } from './detailList';
 import { TransactionInfo } from './TransactionInfo';
 import ModuleLoader from '@microsoft/sp-module-loader';
 import * as jQuery from 'jquery';
+import { PartList } from './PartList';
+import { stockHeader } from './stockheaderlist';
 require('jqueryui');
 require('jqgride');
 require('jqGrid');
@@ -28,7 +30,9 @@ export class TransactionTestPage extends React.Component<any,any> implements ITr
             isProcessing:false,
             progress:0,
             date:"",
-            taskName:""
+            taskName:"",
+            startDate:"",
+            endDate:""
 
         }
     }
@@ -42,7 +46,7 @@ export class TransactionTestPage extends React.Component<any,any> implements ITr
     async componentDidMount(){
 
             
-            jQuery(document).ready(function() { 
+/*             jQuery(document).ready(function() { 
                 $("#list2").jqGrid({
                             url:'server.php?q=2',
                          datatype: "json",
@@ -67,7 +71,7 @@ export class TransactionTestPage extends React.Component<any,any> implements ITr
                      
                      $("#list2").jqGrid('navGrid','#pager2',{edit:false,add:false,del:false}) as any;
                     }); 
-            
+             */
 
 
 
@@ -268,6 +272,52 @@ export class TransactionTestPage extends React.Component<any,any> implements ITr
         apiTransaction.ExecuteCommand("Rollback test - 2"); 
     }
 
+    recover =async (e) =>{
+
+
+        let tsInfo = new TransactionInfo("");
+        tsInfo.setProgressIndicator(this);  // if you want to have progress on transaciton
+        let apiTransaction = new ApiTransactionTracker(tsInfo);
+        tsInfo._transationName ="Submit";
+        tsInfo.setFormID("AdjustWareHouse");
+
+        console.log("updated wh info");
+        let rstheaderList:PartList[] = await apiTransaction.LoadAll(PartList,`Requested_x0020_Date ge '${this.state.startDate}' 
+        and Requested_x0020_Date le '${this.state.endDate}' 
+        and Status eq 'InProgress'`);
+
+        let targetData = [];
+
+        for (let index = 0; index < rstheaderList.length; index++) {
+            const element = rstheaderList[index];
+
+            let rststockheaderList:stockHeader[] = await apiTransaction.LoadAll(stockHeader,`Title eq '${element.Title}'`);
+
+            if (rststockheaderList.length > 0){
+
+                if ( rststockheaderList[0].Request_x0020_Status === "Completed"){
+                    element.Status = "Completed";
+                    element.Assigned_x0020_Approvers = [];
+                    element.WH_x0020_Approved_x0020_Date = rststockheaderList[0].WarehouseUpdated;
+
+                    apiTransaction.CommandForUpdate(element);
+                    targetData.push(element)
+                    console.log(element.Title);
+                }
+            }
+            
+        }
+    
+        await apiTransaction.ExecuteCommand("Update parts"); 
+        
+        console.log("updated wh info");
+        for (let index = 0; index < targetData.length; index++) {
+            const element = targetData[index];
+            console.log(element.Title)
+            
+        }
+    }
+
    
 
 
@@ -309,10 +359,26 @@ export class TransactionTestPage extends React.Component<any,any> implements ITr
 <br></br>
 <br></br>
 
+<button onClick={
+                this.recover
+              }> adjust ware house data </button>
+
+<br></br>
+<br></br>
+
 <button className={'test'} > Rollback test </button>
 
 <br></br>
 <br></br>
+
+<input 
+                            name="startDate" value={this.state.startDate}
+                           type="text"
+                            onChange={this.handleChange} />   
+                                    <input 
+                            name="endDate" value={this.state.endDate}
+                           type="text"
+                            onChange={this.handleChange} />   
 
 <table id="list2"></table>
 <div id="pager2"></div>

@@ -144,7 +144,6 @@ export abstract class AbsISPTRansactionTracker implements ISPTransactionTrackerH
 
     async checkifOtherTransactionWorking():Promise<boolean>{
         
-        debugger;
         let trackerSite = this.getTrackerSharePointSite();
         let listName = this.getTrackerHeaderListName();
         let web = new Web(trackerSite);

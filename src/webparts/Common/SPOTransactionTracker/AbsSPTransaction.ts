@@ -163,27 +163,36 @@ export abstract class AbsSPTransaction implements ISPTransactionCommand {
             else if (memberValInGroup.filter(p=>p === props.toString()).length > 0){
 
                 let tempJson = "";
-                if ( targetValue.length > 0){                    
 
-                    for (let index = 0; index < targetValue.length; index++) {
-                        const element = targetValue[index];
+                if ( targetValue != null){
 
-                        if (element == null){
-                            
-                        }else if (element.Id == null){
-                            
+                    if ( targetValue.length > 0){                    
+
+                        for (let index = 0; index < targetValue.length; index++) {
+                            const element = targetValue[index];
+    
+                            if (element == null){
+                                
+                            }else if (element.Id == null){
+                                
+                            }
+                            else{
+                                tempJson += `${element.Id},`
+                            }                         
                         }
-                        else{
-                            tempJson += `${element.Id},`
-                        }                         
-                    }
+    
+                        tempJson=tempJson.substring(0,tempJson.length-1);
+                        tempJson = `{"${props.toString()}Id":{"results":[${tempJson}]}}`;
+                        
+                    }else{
+                        tempJson = `{"${props.toString()}Id":{"results":[]}}`;
+                    }    
 
-                    tempJson=tempJson.substring(0,tempJson.length-1);
-                    tempJson = `{"${props.toString()}Id":{"results":[${tempJson}]}}`;
-                    
                 }else{
                     tempJson = `{"${props.toString()}Id":{"results":[]}}`;
-                }    
+                }
+
+
 
                 targetobj = JSON.parse(tempJson);
             } 
@@ -208,47 +217,63 @@ export abstract class AbsSPTransaction implements ISPTransactionCommand {
             else if (memeberValMulitiLookup.filter(p=>p === props.toString()).length > 0){
 
                 let tempJson = "";
-                if ( targetValue.length > 0){                    
 
-                    for (let index = 0; index < targetValue.length; index++) {
-                        const element = targetValue[index];
+                if( targetValue != null){
 
-                        if (element == null){
-                            
+                    if ( targetValue.length > 0){                    
+
+                        for (let index = 0; index < targetValue.length; index++) {
+                            const element = targetValue[index];
+    
+                            if (element == null){
+                                
+                            }
+                            else if (element.Id == null){
+                                
+                            }
+                            else{
+                                tempJson += `${element.Id},`
+                            }                         
                         }
-                        else if (element.Id == null){
-                            
-                        }
-                        else{
-                            tempJson += `${element.Id},`
-                        }                         
+    
+                        tempJson=tempJson.substring(0,tempJson.length-1);
+                        tempJson = `{"${props.toString()}Id":{"results":[${tempJson}]}}`;
+                        
+                    }else{
+                        tempJson = `{"${props.toString()}Id":{"results":[]}}`;
                     }
 
-                    tempJson=tempJson.substring(0,tempJson.length-1);
-                    tempJson = `{"${props.toString()}Id":{"results":[${tempJson}]}}`;
-                    
                 }else{
                     tempJson = `{"${props.toString()}Id":{"results":[]}}`;
                 }
+
+
                 targetobj = JSON.parse(tempJson);
             } 
             else if (memeberValMultiChoice.filter(p=>p === props.toString()).length > 0){
 
                 let tempJson = "";
-                if ( targetValue.length > 0){
 
-                    for (let index = 0; index < targetValue.length; index++) {
-                        const element = targetValue[index];    
-                        tempJson += `"${element}",`
-                                                 
-                    }
-                        tempJson=tempJson.substring(0,tempJson.length-1);
-                        tempJson = `{"${props.toString()}":{"results":[${tempJson}]}}`;
+                if ( targetValue != null){
 
+                    if ( targetValue.length > 0){
+
+                        for (let index = 0; index < targetValue.length; index++) {
+                            const element = targetValue[index];    
+                            tempJson += `"${element}",`
+                                                     
+                        }
+                            tempJson=tempJson.substring(0,tempJson.length-1);
+                            tempJson = `{"${props.toString()}":{"results":[${tempJson}]}}`;
+    
+                    }else{
+    
+                        tempJson = `{"${props.toString()}":{"results":[]}}`;
+                    }        
+    
                 }else{
-
                     tempJson = `{"${props.toString()}":{"results":[]}}`;
-                }        
+                }
 
                 targetobj = JSON.parse(tempJson);
             } 

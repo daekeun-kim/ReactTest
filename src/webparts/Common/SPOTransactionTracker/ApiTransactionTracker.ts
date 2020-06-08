@@ -525,26 +525,26 @@ export class ApiTransactionTracker {
             });
     
             if(getData.nextUrl) {
-                 return returnedItems.concat(await this.pageData(getData,target).then(result => {
-                    return result;
-                }));
+                returnedItems = returnedItems.concat(await this.pageData(getData,target));
             } else {            
-
-                for (let index = 0; index < returnedItems.length; index++) {
-                    const element = returnedItems[index];
-                    let tempObj = new T();
-                    for (var props in tempObj) {              
-                        
-                        if (element[props] != null){
-                            tempObj[props] = element[props];
-                        }
-                    }
-                    await tempObj.onCompletedLoad();
-                    results.push(tempObj);                    
-                }
-                target.afterLoad(results);                
-                return results;
+                
             }    
+            
+            for (let index = 0; index < returnedItems.length; index++) {
+                const element = returnedItems[index];
+                let tempObj = new T();
+                for (var props in tempObj) {              
+                    
+                    if (element[props] != null){
+                        tempObj[props] = element[props];
+                    }
+                }
+                await tempObj.onCompletedLoad();
+                results.push(tempObj);                    
+            }
+            target.afterLoad(results);                
+            return results;
+
         } catch (e){
             console.log('error - ', e);
             target.errorWhenLoad(e);      
@@ -577,26 +577,27 @@ export class ApiTransactionTracker {
             });
     
             if(getData.nextUrl) {
-                 return returnedItems.concat(await this.pageData(getData,target).then(result => {
-                    return result;
-                }));
+                returnedItems =  returnedItems.concat(await this.pageData(getData,target));
             } else {            
 
-                for (let index = 0; index < returnedItems.length; index++) {
-                    const element = returnedItems[index];
-                    let tempObj = new T();
-                    for (var props in tempObj) {              
-                        
-                        if (element[props] != null){
-                            tempObj[props] = element[props];
-                        }
-                    }
-                    await tempObj.onCompletedLoad();
-                    results.push(tempObj);                    
-                }
-                target.afterLoad(results);                
-                return results;
+
             }    
+
+            for (let index = 0; index < returnedItems.length; index++) {
+                const element = returnedItems[index];
+                let tempObj = new T();
+                for (var props in tempObj) {              
+                    
+                    if (element[props] != null){
+                        tempObj[props] = element[props];
+                    }
+                }
+                await tempObj.onCompletedLoad();
+                results.push(tempObj);                    
+            }
+            target.afterLoad(results);                
+            return results;
+
         } catch (e){
             console.log('error - ', e);
             target.errorWhenLoad(e);      

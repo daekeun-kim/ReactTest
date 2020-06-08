@@ -1,32 +1,30 @@
-
+import pnp  from "sp-pnp-js";
 import { AbsSPTransaction } from "../../../Common/SPOTransactionTracker/AbsSPTransaction";
 import { Person } from "../../../Common/SPOType/Person";
 
-export class TaskList extends AbsSPTransaction {
+export class stockHeader extends AbsSPTransaction {
 
-  Title: string;  
-  FormID:string;
-  ApproverControl:string;
-  Phase:number;
-  Step:number;
-  Assigned_x0020_To:Person;
+
+  Title: string;
+  Request_x0020_Status:string;
+  WarehouseUpdated:Date
+  WarehouseUpdatedBy:Person
 
 
   constructor() {
 
 
     super();
-    this.Title = ""
-      this.FormID =""
-      , this.ApproverControl = ""
-      , this.Phase = null
-      , this.Step = null
-      , this.Assigned_x0020_To = new Person()            
-      
+    this.Title = ""      
+      , this.Request_x0020_Status = ""
+      , this.WarehouseUpdated = null
+      , this.WarehouseUpdatedBy = new Person()
   }
+
   getPrimaryMemeberFields(): string[] {
-    return ["FormID","ApproverControl","Assigned_x0020_To"];
+    return ["Title"];
   }
+
   getMultiChoiceMemeberFields(): string[] {
     return [];
   }
@@ -44,16 +42,16 @@ export class TaskList extends AbsSPTransaction {
   }
   getListName(): string {
 
-    return "StockAdjRequestsTasks";
+    return "StockAdjRequests";
 
   }
 
 getDateMemeberFields(): string[] {
     
-    return [];
+    return ["WarehouseUpdated"];
 }
 getPersonMemeberFields(): string[] {
-    return ["Assigned_x0020_To"];
+    return ["WarehouseUpdatedBy"];
 }
 getVirtualMemeberFields(): string[] {
     return [];
