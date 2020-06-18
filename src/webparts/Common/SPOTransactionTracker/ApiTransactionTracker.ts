@@ -407,6 +407,16 @@ export class ApiTransactionTracker {
                     break;
                 }
             }
+            
+            for (let index = 0; index < this._commandQueue.length; index++) {
+            
+                const element = this._commandQueue[index];
+                let result = element.getTargetObj().getResult();
+
+                if ( result === false){
+                    this._spTrackerTacker.updateTrackerDetails(result,element,this._currentTaskName);
+                }
+            }
 
             if ( transactionResult === false){
                 await this._spTrackerTacker.updateTrackerHeader(transactionResult);

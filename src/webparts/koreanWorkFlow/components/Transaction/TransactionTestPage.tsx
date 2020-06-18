@@ -269,6 +269,20 @@ export class TransactionTestPage extends React.Component<any,any> implements ITr
 
         apiTransaction.CommandForAdd(tempError);
 
+        let resut = await apiTransaction.ExecutePartialCommand("Rollback test - 2"); 
+
+        if (resut == false){
+            return;
+        }
+
+        let success2 = new headerList();
+        success2.Title ="test";
+        success2.YesOrNo = false;
+        success2.Number = 5
+        success2.formID = "test123";
+
+        apiTransaction.CommandForAdd(success);
+
         apiTransaction.ExecuteCommand("Rollback test - 2"); 
     }
 
